@@ -11,6 +11,7 @@ import ProjectsTable from "@/components/dashboard/ProjectsTable";
 import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
+import ProjectMap from "@/components/dashboard/ProjectMap";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
@@ -183,14 +184,13 @@ const Index = () => {
             )}
 
             {activeTab === "location" && (
-              <div className="bg-card rounded-xl border border-border shadow-card p-6 text-center">
-                <h3 className="text-sm font-bold text-foreground mb-2">
-                  Project Locations
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Map integration coming soon. Project locations across Busia
-                  County will be displayed here.
-                </p>
+              <div className="flex flex-col gap-4">
+                <FilterBar
+                  filters={filters}
+                  onChange={setFilters}
+                  onReset={() => setFilters(defaultFilters)}
+                />
+                <ProjectMap projects={filtered} />
               </div>
             )}
 
@@ -213,7 +213,9 @@ const Index = () => {
       {/* Admin Login Modal */}
       {showLoginModal && (
         <AdminLoginModal
-          onLogin={signIn}
+          onLogin={async (e, p) => {
+            await signIn(e, p);
+          }}
           onClose={() => setShowLoginModal(false)}
         />
       )}
