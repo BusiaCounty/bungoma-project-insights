@@ -42,16 +42,16 @@ const createIcon = (status: string) => {
 };
 
 const ProjectMap = ({ projects }: ProjectMapProps) => {
-  // Busia Center roughly
-  const busiaCenter: [number, number] = [0.46, 34.1];
+  // Bungoma Center roughly
+  const bungomaCenter: [number, number] = [0.56, 34.56];
 
   const mapData = useMemo(() => {
     return projects.map((p) => {
       // Simulate lat/lng inside Busia
-      // Latitude: ~ 0.15 to 0.7
-      // Longitude: ~ 33.95 to 34.35
-      const lat = 0.15 + seededRandom(p.id + "lat") * 0.55;
-      const lng = 33.95 + seededRandom(p.id + "lng") * 0.4;
+      // Latitude: ~ 0.4 to 0.9
+      // Longitude: ~ 34.3 to 34.8
+      const lat = 0.4 + seededRandom(p.id + "lat") * 0.5;
+      const lng = 34.3 + seededRandom(p.id + "lng") * 0.5;
       return { ...p, lat, lng };
     });
   }, [projects]);
@@ -63,13 +63,13 @@ const ProjectMap = ({ projects }: ProjectMapProps) => {
           Interactive Project Map
         </h3>
         <p className="text-[11px] text-muted-foreground">
-          Showing simulated project locations across Busia County
+          Showing simulated project locations across Bungoma County
         </p>
       </div>
 
       <div className="flex-1 w-full relative z-0">
         <MapContainer
-          center={busiaCenter}
+          center={bungomaCenter}
           zoom={10}
           style={{ height: "100%", width: "100%", zIndex: 0 }}
         >
