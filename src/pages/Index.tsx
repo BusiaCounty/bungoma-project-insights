@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Calendar, Loader2 } from "lucide-react";
+import { Calendar, Loader2, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardSidebar, {
   type TabId,
@@ -10,7 +10,9 @@ import Charts from "@/components/dashboard/Charts";
 import ProjectsTable from "@/components/dashboard/ProjectsTable";
 import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
+import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
 import { fetchProjects } from "@/data/projects";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const defaultFilters: Filters = {
   subCounty: "all",
@@ -24,6 +26,15 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [dateTime, setDateTime] = useState(new Date());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const {
+    isAdmin,
+    user,
+    isLoading: authLoading,
+    signIn,
+    signOut,
+  } = useAdminAuth();
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects"],
@@ -47,12 +58,28 @@ const Index = () => {
     });
   }, [filters, projects]);
 
+  const mobileTabLabels: Record<TabId, string> = {
+    dashboard: "Dashboard",
+    projects: "Projects",
+    location: "Location",
+    status: "Status",
+    whistleblower: "Report",
+  };
+
   return (
     <div className="min-h-screen grid grid-cols-[260px_1fr] gap-5 p-5 items-start max-lg:grid-cols-1">
       <div className="max-lg:hidden">
-        <DashboardSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <DashboardSidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          isAdmin={isAdmin}
+          adminEmail={user?.email}
+          onAdminLogin={() => setShowLoginModal(true)}
+          onAdminLogout={signOut}
+        />
       </div>
 
+      {/* Mobile nav */}
       <div className="lg:hidden flex gap-1 overflow-x-auto pb-1">
         {(
           [
@@ -72,20 +99,26 @@ const Index = () => {
                 : "bg-card text-foreground border border-border"
             }`}
           >
-            {t === "dashboard"
-              ? "Dashboard"
-              : t === "projects"
-                ? "Projects"
-                : t === "location"
-                  ? "Location"
-                  : t === "status"
-                    ? "Status"
-                    : "Report"}
+            {mobileTabLabels[t]}
           </button>
         ))}
+
+        {/* Mobile admin toggle */}
+        <button
+          onClick={isAdmin ? signOut : () => setShowLoginModal(true)}
+          className={`ml-auto flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
+            isAdmin
+              ? "bg-primary/10 text-primary border border-primary/20"
+              : "bg-card text-muted-foreground border border-border"
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          {authLoading ? "…" : isAdmin ? "Admin" : "Login"}
+        </button>
       </div>
 
       <div className="flex flex-col gap-4 min-w-0">
+        {/* Header */}
         <div className="gradient-hero rounded-xl p-5 border border-border shadow-card flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-3 items-center">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
@@ -100,15 +133,23 @@ const Index = () => {
               </p>
             </div>
           </div>
-          <div className="text-right text-xs text-muted-foreground font-semibold tabular-nums">
-            {dateTime.toLocaleDateString("en-KE", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-            <br />
-            {dateTime.toLocaleTimeString("en-KE")}
+          <div className="flex items-center gap-3">
+            {isAdmin && (
+              <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary">
+                <ShieldCheck className="w-3 h-3" />
+                Admin Mode
+              </span>
+            )}
+            <div className="text-right text-xs text-muted-foreground font-semibold tabular-nums">
+              {dateTime.toLocaleDateString("en-KE", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+              <br />
+              {dateTime.toLocaleTimeString("en-KE")}
+            </div>
           </div>
         </div>
 
@@ -137,7 +178,7 @@ const Index = () => {
                   onChange={setFilters}
                   onReset={() => setFilters(defaultFilters)}
                 />
-                <ProjectsTable projects={filtered} />
+                <ProjectsTable projects={filtered} isAdmin={isAdmin} />
               </div>
             )}
 
@@ -168,6 +209,14 @@ const Index = () => {
           </>
         )}
       </div>
+
+      {/* Admin Login Modal */}
+      {showLoginModal && (
+        <AdminLoginModal
+          onLogin={signIn}
+          onClose={() => setShowLoginModal(false)}
+        />
+      )}
     </div>
   );
 };

@@ -4,6 +4,9 @@ import {
   MapPin,
   MessageSquare,
   ShieldAlert,
+  LogIn,
+  LogOut,
+  ShieldCheck,
 } from "lucide-react";
 
 export type TabId =
@@ -16,6 +19,10 @@ export type TabId =
 interface DashboardSidebarProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
+  isAdmin?: boolean;
+  adminEmail?: string | null;
+  onAdminLogin?: () => void;
+  onAdminLogout?: () => void;
 }
 
 const tabs: {
@@ -59,6 +66,10 @@ const tabs: {
 const DashboardSidebar = ({
   activeTab,
   onTabChange,
+  isAdmin = false,
+  adminEmail,
+  onAdminLogin,
+  onAdminLogout,
 }: DashboardSidebarProps) => {
   return (
     <aside className="gradient-sidebar rounded-2xl p-4 h-[calc(100vh-44px)] overflow-auto shadow-sidebar border border-border flex flex-col sticky top-[22px]">
@@ -102,8 +113,43 @@ const DashboardSidebar = ({
         ))}
       </nav>
 
-      <div className="mt-auto pt-3 border-t border-border">
-        <p className="text-[10px] text-muted-foreground text-center">
+      {/* Admin section */}
+      <div className="mt-auto pt-3 border-t border-border flex flex-col gap-2">
+        {isAdmin ? (
+          <>
+            {/* Admin badge */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/15">
+              <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold text-primary">Admin Mode</p>
+                {adminEmail && (
+                  <p className="text-[9px] text-muted-foreground truncate">
+                    {adminEmail}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Sign out */}
+            <button
+              onClick={onAdminLogout}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/15 transition-all"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign Out
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onAdminLogin}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/15 transition-all"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Admin Login
+          </button>
+        )}
+
+        <p className="text-[10px] text-muted-foreground text-center mt-1">
           © 2026 County Government of Busia
         </p>
       </div>
