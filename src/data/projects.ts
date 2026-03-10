@@ -1,17 +1,9 @@
-export interface Project {
-  id: number;
-  name: string;
-  subCounty: string;
-  ward: string;
-  sector: string;
-  status: "Completed" | "Ongoing" | "Stalled";
-  budget: number;
-  fy: string;
-  description: string;
-  lat?: number;
-  lng?: number;
-  progress: number;
-}
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+
+export type Project = Tables<"projects">;
+export type WhistleblowerReport = TablesInsert<"whistleblower_reports">;
+export type ProjectFeedback = TablesInsert<"project_feedback">;
 
 export const SUB_COUNTIES = [
   "Bumula", "Kabuchai", "Kanduyi", "Kimilili", "Mt. Elgon",
@@ -46,46 +38,36 @@ export const getWards = (subCounty?: string) => {
   return WARDS[subCounty] || [];
 };
 
-// Generate sample projects
-function generateProjects(): Project[] {
-  const projects: Project[] = [];
-  let id = 1;
-  const projectNames = [
-    "Construction of Health Center", "Borehole Drilling", "Road Grading & Murram",
-    "School Classroom Construction", "Market Shed Construction", "Solar Streetlights Installation",
-    "Bridge Construction", "ECD Center Development", "Water Pipeline Extension",
-    "Agricultural Training Center", "ICT Hub Development", "Dispensary Upgrade",
-    "Cattle Dip Rehabilitation", "Vocational Training Center", "Drainage System Construction",
-    "Community Hall Construction", "Fish Pond Development", "Milk Cooling Plant",
-    "Rural Electrification", "Sanitation Block Construction"
-  ];
-
-  for (const sc of SUB_COUNTIES) {
-    const wards = WARDS[sc] || [];
-    for (const ward of wards) {
-      const numProjects = 2 + Math.floor(Math.random() * 4);
-      for (let i = 0; i < numProjects; i++) {
-        const sector = SECTORS[Math.floor(Math.random() * SECTORS.length)];
-        const status = STATUSES[Math.floor(Math.random() * STATUSES.length)];
-        const fy = FINANCIAL_YEARS[Math.floor(Math.random() * FINANCIAL_YEARS.length)];
-        const budget = (Math.floor(Math.random() * 50) + 5) * 100000;
-        const progress = status === "Completed" ? 100 : status === "Stalled" ? Math.floor(Math.random() * 40) : 40 + Math.floor(Math.random() * 55);
-        projects.push({
-          id: id++,
-          name: `${projectNames[Math.floor(Math.random() * projectNames.length)]} - ${ward}`,
-          subCounty: sc,
-          ward,
-          sector,
-          status,
-          budget,
-          fy,
-          description: `${sector} project in ${ward}, ${sc} Sub County.`,
-          progress,
-        });
-      }
-    }
-  }
-  return projects;
+export async function fetchProjects(): Promise<Project[]> {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
 }
 
-export const PROJECTS = generateProjects();
+export async function submitWhistleblowerReport(report: WhistleblowerReport) {
+  const { error } = await supabase
+    .from("whistleblower_reports")
+    .insert(report);
+  if (error) throw error;
+}
+
+export async function submitFeedback(feedback: ProjectFeedback) {
+  const { error } = await supabase
+    .from("project_feedback")
+    .insert(feedback);
+  if (error) throw error;
+}
+
+export async function fetchFeedback(projectId?: string) {
+  let query = supabase
+    .from("project_feedback")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (projectId) query = query.eq("project_id", projectId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}

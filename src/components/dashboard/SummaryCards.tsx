@@ -7,7 +7,7 @@ interface SummaryCardsProps {
 
 const SummaryCards = ({ projects }: SummaryCardsProps) => {
   const total = projects.length;
-  const totalBudget = projects.reduce((s, p) => s + p.budget, 0);
+  const totalBudget = projects.reduce((s, p) => s + Number(p.budget), 0);
   const completed = projects.filter((p) => p.status === "Completed").length;
   const ongoing = projects.filter((p) => p.status === "Ongoing").length;
 

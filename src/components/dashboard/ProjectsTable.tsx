@@ -27,17 +27,17 @@ const ProjectsTable = ({ projects }: ProjectsTableProps) => {
             </tr>
           </thead>
           <tbody>
-            {projects.slice(0, 100).map((p, i) => (
+            {projects.map((p, i) => (
               <tr key={p.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                 <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
                 <td className="px-3 py-2 font-medium max-w-[220px] truncate">{p.name}</td>
-                <td className="px-3 py-2">{p.subCounty}</td>
+                <td className="px-3 py-2">{p.sub_county}</td>
                 <td className="px-3 py-2">{p.ward}</td>
                 <td className="px-3 py-2">{p.sector}</td>
                 <td className="px-3 py-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusClass[p.status]}`}>{p.status}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusClass[p.status] || ""}`}>{p.status}</span>
                 </td>
-                <td className="px-3 py-2 font-medium">{p.budget.toLocaleString()}</td>
+                <td className="px-3 py-2 font-medium">{Number(p.budget).toLocaleString()}</td>
                 <td className="px-3 py-2">{p.fy}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
