@@ -14,7 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      project_feedback: {
+        Row: {
+          author_name: string
+          comment: string
+          created_at: string
+          id: string
+          project_id: string | null
+          rating: number | null
+        }
+        Insert: {
+          author_name?: string
+          comment: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          rating?: number | null
+        }
+        Update: {
+          author_name?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_feedback_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          budget: number
+          created_at: string
+          description: string | null
+          fy: string
+          id: string
+          name: string
+          progress: number
+          sector: string
+          status: Database["public"]["Enums"]["project_status"]
+          sub_county: string
+          updated_at: string
+          ward: string
+        }
+        Insert: {
+          budget?: number
+          created_at?: string
+          description?: string | null
+          fy: string
+          id?: string
+          name: string
+          progress?: number
+          sector: string
+          status?: Database["public"]["Enums"]["project_status"]
+          sub_county: string
+          updated_at?: string
+          ward: string
+        }
+        Update: {
+          budget?: number
+          created_at?: string
+          description?: string | null
+          fy?: string
+          id?: string
+          name?: string
+          progress?: number
+          sector?: string
+          status?: Database["public"]["Enums"]["project_status"]
+          sub_county?: string
+          updated_at?: string
+          ward?: string
+        }
+        Relationships: []
+      }
+      whistleblower_reports: {
+        Row: {
+          created_at: string
+          description: string
+          evidence: string | null
+          id: string
+          project_name: string | null
+          sub_county: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          evidence?: string | null
+          id?: string
+          project_name?: string | null
+          sub_county?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          evidence?: string | null
+          id?: string
+          project_name?: string | null
+          sub_county?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +129,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      project_status: "Completed" | "Ongoing" | "Stalled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +256,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      project_status: ["Completed", "Ongoing", "Stalled"],
+    },
   },
 } as const
