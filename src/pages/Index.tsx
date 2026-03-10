@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { Calendar, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import DashboardSidebar, { type TabId } from "@/components/dashboard/DashboardSidebar";
+import DashboardSidebar, {
+  type TabId,
+} from "@/components/dashboard/DashboardSidebar";
 import FilterBar, { type Filters } from "@/components/dashboard/FilterBar";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import Charts from "@/components/dashboard/Charts";
@@ -10,7 +12,13 @@ import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
 import { fetchProjects } from "@/data/projects";
 
-const defaultFilters: Filters = { subCounty: "all", ward: "all", sector: "all", status: "all", fy: "all" };
+const defaultFilters: Filters = {
+  subCounty: "all",
+  ward: "all",
+  sector: "all",
+  status: "all",
+  fy: "all",
+};
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
@@ -29,7 +37,8 @@ const Index = () => {
 
   const filtered = useMemo(() => {
     return projects.filter((p) => {
-      if (filters.subCounty !== "all" && p.sub_county !== filters.subCounty) return false;
+      if (filters.subCounty !== "all" && p.sub_county !== filters.subCounty)
+        return false;
       if (filters.ward !== "all" && p.ward !== filters.ward) return false;
       if (filters.sector !== "all" && p.sector !== filters.sector) return false;
       if (filters.status !== "all" && p.status !== filters.status) return false;
@@ -45,15 +54,33 @@ const Index = () => {
       </div>
 
       <div className="lg:hidden flex gap-1 overflow-x-auto pb-1">
-        {(["dashboard", "projects", "location", "status", "whistleblower"] as TabId[]).map((t) => (
+        {(
+          [
+            "dashboard",
+            "projects",
+            "location",
+            "status",
+            "whistleblower",
+          ] as TabId[]
+        ).map((t) => (
           <button
             key={t}
             onClick={() => setActiveTab(t)}
             className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === t ? "bg-primary text-primary-foreground" : "bg-card text-foreground border border-border"
+              activeTab === t
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground border border-border"
             }`}
           >
-            {t === "dashboard" ? "Dashboard" : t === "projects" ? "Projects" : t === "location" ? "Location" : t === "status" ? "Status" : "Report"}
+            {t === "dashboard"
+              ? "Dashboard"
+              : t === "projects"
+                ? "Projects"
+                : t === "location"
+                  ? "Location"
+                  : t === "status"
+                    ? "Status"
+                    : "Report"}
           </button>
         ))}
       </div>
@@ -66,13 +93,20 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-foreground tracking-tight">
-                County Government of Bungoma
+                County Government of <Busia></Busia>
               </h1>
-              <p className="text-xs text-muted-foreground">Projects Stock Dashboard — Interactive analytics and summaries</p>
+              <p className="text-xs text-muted-foreground">
+                Projects Stock Dashboard — Interactive analytics and summaries
+              </p>
             </div>
           </div>
           <div className="text-right text-xs text-muted-foreground font-semibold tabular-nums">
-            {dateTime.toLocaleDateString("en-KE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            {dateTime.toLocaleDateString("en-KE", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
             <br />
             {dateTime.toLocaleTimeString("en-KE")}
           </div>
@@ -86,7 +120,11 @@ const Index = () => {
           <>
             {activeTab === "dashboard" && (
               <div className="flex flex-col gap-4">
-                <FilterBar filters={filters} onChange={setFilters} onReset={() => setFilters(defaultFilters)} />
+                <FilterBar
+                  filters={filters}
+                  onChange={setFilters}
+                  onReset={() => setFilters(defaultFilters)}
+                />
                 <SummaryCards projects={filtered} />
                 <Charts projects={filtered} />
               </div>
@@ -94,21 +132,34 @@ const Index = () => {
 
             {activeTab === "projects" && (
               <div className="flex flex-col gap-4">
-                <FilterBar filters={filters} onChange={setFilters} onReset={() => setFilters(defaultFilters)} />
+                <FilterBar
+                  filters={filters}
+                  onChange={setFilters}
+                  onReset={() => setFilters(defaultFilters)}
+                />
                 <ProjectsTable projects={filtered} />
               </div>
             )}
 
             {activeTab === "location" && (
               <div className="bg-card rounded-xl border border-border shadow-card p-6 text-center">
-                <h3 className="text-sm font-bold text-foreground mb-2">Project Locations</h3>
-                <p className="text-xs text-muted-foreground">Map integration coming soon. Project locations across Bungoma County will be displayed here.</p>
+                <h3 className="text-sm font-bold text-foreground mb-2">
+                  Project Locations
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Map integration coming soon. Project locations across Busia
+                  County will be displayed here.
+                </p>
               </div>
             )}
 
             {activeTab === "status" && (
               <div className="flex flex-col gap-4">
-                <FilterBar filters={filters} onChange={setFilters} onReset={() => setFilters(defaultFilters)} />
+                <FilterBar
+                  filters={filters}
+                  onChange={setFilters}
+                  onReset={() => setFilters(defaultFilters)}
+                />
                 <StatusFeedback projects={filtered} />
               </div>
             )}
