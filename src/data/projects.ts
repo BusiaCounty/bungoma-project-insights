@@ -6,31 +6,88 @@ export type WhistleblowerReport = TablesInsert<"whistleblower_reports">;
 export type ProjectFeedback = TablesInsert<"project_feedback">;
 
 export const SUB_COUNTIES = [
-  "Bumula", "Kabuchai", "Kanduyi", "Kimilili", "Mt. Elgon",
-  "Sirisia", "Tongaren", "Webuye East", "Webuye West"
+  "Matayos",
+  "Nambale",
+  "Butula",
+  "Funyula",
+  "Budalang'i",
+  "Teso North",
+  "Teso South",
 ];
 
 export const SECTORS = [
-  "Health", "Education", "Roads & Infrastructure", "Water & Sanitation",
-  "Agriculture", "Energy", "Trade & Industry", "ICT"
+  "Health and Sanitation",
+  "Education and Industrial Skills Development",
+  "Transport, Roads and Public Works",
+  "Water, Irrigation, Environment, Natural Resources, Climate Change and Energy",
+  "Smart Agriculture, Livestock, Fisheries, Blue Economy",
+  "Energy",
+  "Trade, Investment, Industrialization, Cooperatives and Small Micro Enterprises (SME)",
+  "Strategic Partnerships, ICT and Digital Economy",
+  "Youth, Sports, Tourism, Culture Social Protection, Gender Affairs and Creative Arts",
+  "The County Treasury and Economic Planning",
+  "Lands, Housing and Urban Development",
+  "Public Service Management & Governance",
 ];
 
 export const STATUSES = ["Completed", "Ongoing", "Stalled"] as const;
 
 export const FINANCIAL_YEARS = [
-  "2020/2021", "2021/2022", "2022/2023", "2023/2024", "2024/2025"
+  "2020/2021",
+  "2021/2022",
+  "2022/2023",
+  "2023/2024",
+  "2024/2025",
 ];
 
 const WARDS: Record<string, string[]> = {
-  "Bumula": ["Bumula", "Khasoko", "Kabula", "South Bukusu", "Siboti", "West Bukusu"],
-  "Kabuchai": ["Kabuchai", "Chwele/Kabula", "West Nalondo", "Bwake/Luuya"],
-  "Kanduyi": ["Khalaba", "Musikoma", "East Sang'alo", "Marakaru/Tuuti", "Sang'alo/West", "Township"],
-  "Kimilili": ["Kimilili", "Kibingei", "Maeni", "Kamukuywa"],
-  "Mt. Elgon": ["Cheptais", "Chesikaki", "Chepyuk", "Kapkateny", "Kaptama", "Elgon"],
-  "Sirisia": ["Sirisia", "Malakisi/South Kulisiru", "Lwandanyi", "Namwela"],
-  "Tongaren": ["Tongaren", "Naitiri/Kabuyefwe", "Milima", "Ndalu/Tabani", "Soysambu/Mitua"],
-  "Webuye East": ["Mihuu", "Ndivisi", "Maraka"],
-  "Webuye West": ["Sitikho", "Matulo", "Bokoli", "Misikhu"],
+  Matayos: ["Bukhayo West", "Matayos South", "Busibwabo", "Burumba", "Mayenje"],
+  Nambale: [
+    "Nambale Township",
+    "Khasoko",
+    "Bukhayo East",
+    "Bukhayo North/Walatsi",
+    "Bukhayo Central",
+  ],
+  Butula: [
+    "Marachi West",
+    "Marachi North",
+    "Elugulu",
+    "Kingandole",
+    "Marachi Central",
+    "Marachi East",
+  ],
+  Funyula: [
+    "Funyula",
+    "Nangina",
+    "Agenga/Nanguba",
+    "Bwiri",
+    "Namboboto Nambuku",
+  ],
+  "Budalang'i": [
+    "Bunyala Central",
+    "Bunyala North",
+    "Bunyala West",
+    "Bunyala East",
+    "Khajula",
+    "Port Victoria",
+  ],
+  "Teso North": [
+    "Malaba Central",
+    "Malaba North",
+    "Angurai South",
+    "Angurai North",
+    "Angurai East",
+    "Malaba South",
+  ],
+  "Teso South": [
+    "Chakol South",
+    "Chakol North",
+    "Amukura West",
+    "Amukura Central",
+    "Amukura East",
+    "Kakurio",
+  ],
 };
 
 export const getWards = (subCounty?: string) => {
@@ -48,16 +105,12 @@ export async function fetchProjects(): Promise<Project[]> {
 }
 
 export async function submitWhistleblowerReport(report: WhistleblowerReport) {
-  const { error } = await supabase
-    .from("whistleblower_reports")
-    .insert(report);
+  const { error } = await supabase.from("whistleblower_reports").insert(report);
   if (error) throw error;
 }
 
 export async function submitFeedback(feedback: ProjectFeedback) {
-  const { error } = await supabase
-    .from("project_feedback")
-    .insert(feedback);
+  const { error } = await supabase.from("project_feedback").insert(feedback);
   if (error) throw error;
 }
 
