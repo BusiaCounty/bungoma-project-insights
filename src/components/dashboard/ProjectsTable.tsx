@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, PlusCircle } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, Download } from "lucide-react";
 import type { Project } from "@/data/projects";
 import ProjectFormModal from "./ProjectFormModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
