@@ -43,13 +43,12 @@ export function useAdminAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+  const signIn = useCallback(async (email: string, password: string): Promise<void> => {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) throw error;
-    return data;
   }, []);
 
   const signOut = useCallback(async () => {
