@@ -58,6 +58,12 @@ const tabs: {
     icon: MessageSquare,
   },
   {
+    id: "committee",
+    title: "PMC Management",
+    sub: "Committees & tasks",
+    icon: Users,
+  },
+  {
     id: "whistleblower",
     title: "Whistleblower Report",
     sub: "Confidential reports",
