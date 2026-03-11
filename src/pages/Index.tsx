@@ -10,6 +10,7 @@ import Charts from "@/components/dashboard/Charts";
 import ProjectsTable from "@/components/dashboard/ProjectsTable";
 import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
+import CommitteeModule from "@/components/dashboard/CommitteeModule";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
