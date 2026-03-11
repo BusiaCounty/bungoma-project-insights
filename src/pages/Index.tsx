@@ -64,6 +64,7 @@ const Index = () => {
     projects: "Projects",
     location: "Location",
     status: "Status",
+    committee: "PMC",
     whistleblower: "Report",
   };
 
