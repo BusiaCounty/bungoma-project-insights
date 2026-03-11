@@ -89,6 +89,7 @@ const Index = () => {
             "projects",
             "location",
             "status",
+            "committee",
             "whistleblower",
           ] as TabId[]
         ).map((t) => (
