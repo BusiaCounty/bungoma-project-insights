@@ -208,6 +208,10 @@ const Index = () => {
               </div>
             )}
 
+            {activeTab === "committee" && (
+              <CommitteeModule projects={filtered.length ? filtered : projects} isAdmin={isAdmin} />
+            )}
+
             {activeTab === "whistleblower" && <WhistleblowerForm />}
           </>
         )}
