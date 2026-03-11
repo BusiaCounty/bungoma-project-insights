@@ -7,6 +7,7 @@ import {
   LogIn,
   LogOut,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 
 export type TabId =
@@ -14,6 +15,7 @@ export type TabId =
   | "projects"
   | "location"
   | "status"
+  | "committee"
   | "whistleblower";
 
 interface DashboardSidebarProps {
@@ -54,6 +56,12 @@ const tabs: {
     title: "Status & Feedback",
     sub: "Progress & comments",
     icon: MessageSquare,
+  },
+  {
+    id: "committee",
+    title: "PMC Management",
+    sub: "Committees & tasks",
+    icon: Users,
   },
   {
     id: "whistleblower",

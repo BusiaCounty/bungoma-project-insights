@@ -10,6 +10,7 @@ import Charts from "@/components/dashboard/Charts";
 import ProjectsTable from "@/components/dashboard/ProjectsTable";
 import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
+import CommitteeModule from "@/components/dashboard/CommitteeModule";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -63,6 +64,7 @@ const Index = () => {
     projects: "Projects",
     location: "Location",
     status: "Status",
+    committee: "PMC",
     whistleblower: "Report",
   };
 
@@ -87,6 +89,7 @@ const Index = () => {
             "projects",
             "location",
             "status",
+            "committee",
             "whistleblower",
           ] as TabId[]
         ).map((t) => (
@@ -203,6 +206,10 @@ const Index = () => {
                 />
                 <StatusFeedback projects={filtered} />
               </div>
+            )}
+
+            {activeTab === "committee" && (
+              <CommitteeModule projects={filtered.length ? filtered : projects} isAdmin={isAdmin} />
             )}
 
             {activeTab === "whistleblower" && <WhistleblowerForm />}
