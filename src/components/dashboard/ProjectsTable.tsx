@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, PlusCircle } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, Download } from "lucide-react";
 import type { Project } from "@/data/projects";
 import ProjectFormModal from "./ProjectFormModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
@@ -26,6 +26,34 @@ type ModalState =
 const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<ModalState>(null);
+
+  const exportData = (format: "csv" | "excel") => {
+    if (!projects.length) return;
+    const headers = ["#", "Project Name", "Sub County", "Ward", "Sector", "Status", "Budget (KES)", "FY", "Progress (%)"];
+    const rows = projects.map((p, i) => [
+      i + 1, p.name, p.sub_county, p.ward, p.sector, p.status, p.budget, p.fy, p.progress,
+    ]);
+
+    if (format === "csv") {
+      const csvContent = [headers.join(","), ...rows.map(r => r.map(v => `"${v}"`).join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bungoma_projects.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const csvContent = [headers.join("\t"), ...rows.map(r => r.join("\t"))].join("\n");
+      const blob = new Blob([csvContent], { type: "application/vnd.ms-excel" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bungoma_projects.xls";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
 
   const handleSave = async (data: Parameters<typeof createProject>[0]) => {
     if (modal?.type === "edit") {
@@ -55,15 +83,31 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
               {projects.length} projects found
             </p>
           </div>
-          {isAdmin && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setModal({ type: "add" })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold shadow hover:opacity-90 active:scale-[0.98] transition-all"
+              onClick={() => exportData("csv")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-muted/50 text-foreground text-xs font-bold hover:bg-muted active:scale-[0.98] transition-all"
             >
-              <PlusCircle className="w-3.5 h-3.5" />
-              Add Project
+              <Download className="w-3.5 h-3.5" />
+              CSV
             </button>
-          )}
+            <button
+              onClick={() => exportData("excel")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-muted/50 text-foreground text-xs font-bold hover:bg-muted active:scale-[0.98] transition-all"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Excel
+            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setModal({ type: "add" })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold shadow hover:opacity-90 active:scale-[0.98] transition-all"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                Add Project
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
