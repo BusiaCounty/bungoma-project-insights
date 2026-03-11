@@ -55,15 +55,31 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
               {projects.length} projects found
             </p>
           </div>
-          {isAdmin && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setModal({ type: "add" })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold shadow hover:opacity-90 active:scale-[0.98] transition-all"
+              onClick={() => exportData("csv")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-muted/50 text-foreground text-xs font-bold hover:bg-muted active:scale-[0.98] transition-all"
             >
-              <PlusCircle className="w-3.5 h-3.5" />
-              Add Project
+              <Download className="w-3.5 h-3.5" />
+              CSV
             </button>
-          )}
+            <button
+              onClick={() => exportData("excel")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-muted/50 text-foreground text-xs font-bold hover:bg-muted active:scale-[0.98] transition-all"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Excel
+            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setModal({ type: "add" })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold shadow hover:opacity-90 active:scale-[0.98] transition-all"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                Add Project
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
