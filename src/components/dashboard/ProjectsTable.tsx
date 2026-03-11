@@ -27,6 +27,34 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<ModalState>(null);
 
+  const exportData = (format: "csv" | "excel") => {
+    if (!projects.length) return;
+    const headers = ["#", "Project Name", "Sub County", "Ward", "Sector", "Status", "Budget (KES)", "FY", "Progress (%)"];
+    const rows = projects.map((p, i) => [
+      i + 1, p.name, p.sub_county, p.ward, p.sector, p.status, p.budget, p.fy, p.progress,
+    ]);
+
+    if (format === "csv") {
+      const csvContent = [headers.join(","), ...rows.map(r => r.map(v => `"${v}"`).join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bungoma_projects.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const csvContent = [headers.join("\t"), ...rows.map(r => r.join("\t"))].join("\n");
+      const blob = new Blob([csvContent], { type: "application/vnd.ms-excel" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bungoma_projects.xls";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const handleSave = async (data: Parameters<typeof createProject>[0]) => {
     if (modal?.type === "edit") {
       await updateProject(modal.project.id, data);
