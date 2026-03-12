@@ -78,7 +78,7 @@ export default function GeoAdmin() {
               <div className="p-4 rounded-lg bg-card border border-border flex flex-col gap-1">
                   <span className="text-sm font-semibold">Map Provider Layer URL</span>
                   <code className="text-xs bg-muted p-2 rounded text-muted-foreground mt-1 block w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                      https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png
+                      {"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
                   </code>
               </div>
               

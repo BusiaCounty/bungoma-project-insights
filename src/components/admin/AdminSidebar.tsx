@@ -10,12 +10,15 @@ import {
   BarChart,
   Eye,
   ActivitySquare,
-  BellRing
+  BellRing,
+  ClipboardList,
+  MessageSquareText
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export type AdminTabId =
   | "overview"
+  | "project-manager"
   | "users"
   | "rbac"
   | "project-config"
@@ -23,6 +26,7 @@ export type AdminTabId =
   | "financials"
   | "documents"
   | "reports"
+  | "feedback"
   | "transparency"
   | "settings"
   | "audit"
@@ -35,6 +39,7 @@ interface AdminSidebarProps {
 
 const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
+  { id: "project-manager", label: "Project Management", icon: ClipboardList },
   { id: "users", label: "User Management", icon: Users },
   { id: "rbac", label: "Access Control (RBAC)", icon: Shield },
   { id: "project-config", label: "Project Config", icon: FolderTree },
@@ -42,6 +47,7 @@ const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[
   { id: "financials", label: "Financial Controls", icon: Banknote },
   { id: "documents", label: "Media & Documents", icon: Files },
   { id: "reports", label: "Reports & Analytics", icon: BarChart },
+  { id: "feedback", label: "Citizen Feedback", icon: MessageSquareText },
   { id: "transparency", label: "Public Portal Views", icon: Eye },
   { id: "settings", label: "System Settings", icon: Settings },
   { id: "audit", label: "Audit & Security", icon: ActivitySquare },
@@ -50,7 +56,7 @@ const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[
 
 export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
   return (
-    <aside className="h-screen sticky top-0 bg-card border-r border-border shadow-sm flex flex-col pt-6 pb-4 overflow-y-auto w-full max-lg:hidden flex-shrink-0 relative z-10">
+    <aside className="h-screen sticky top-0 bg-card border-r border-border shadow-sm flex flex-col pt-6 pb-4 overflow-y-auto w-80 min-w-[20rem] max-lg:hidden flex-shrink-0 relative z-10">
       <div className="px-6 pb-6 mb-6 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black shadow-md shadow-primary/30">

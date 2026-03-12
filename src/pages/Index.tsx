@@ -12,8 +12,10 @@ import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
 import CommitteeModule from "@/components/dashboard/CommitteeModule";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
+import FinancialSummary from "@/components/dashboard/FinancialSummary";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useNavigate } from "react-router-dom";
 
 const defaultFilters: Filters = {
   subCounty: "all",
@@ -28,6 +30,7 @@ const Index = () => {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [dateTime, setDateTime] = useState(new Date());
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const navigate = useNavigate();
 
   const {
     isAdmin,
@@ -36,6 +39,11 @@ const Index = () => {
     signIn,
     signOut,
   } = useAdminAuth();
+
+  const handleAdminLogin = async (email: string, password: string) => {
+    await signIn(email, password);
+    navigate("/admin");
+  };
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects"],
@@ -64,6 +72,7 @@ const Index = () => {
     projects: "Projects",
     location: "Location",
     status: "Status",
+    financials: "Financials",
     committee: "PMC",
     whistleblower: "Report",
   };
@@ -89,6 +98,7 @@ const Index = () => {
             "projects",
             "location",
             "status",
+            "financials",
             "committee",
             "whistleblower",
           ] as TabId[]
@@ -108,7 +118,7 @@ const Index = () => {
 
         {/* Mobile admin toggle */}
         <button
-          onClick={isAdmin ? signOut : () => setShowLoginModal(true)}
+          onClick={isAdmin ? () => navigate("/admin") : () => setShowLoginModal(true)}
           className={`ml-auto flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
             isAdmin
               ? "bg-primary/10 text-primary border border-primary/20"
@@ -208,6 +218,17 @@ const Index = () => {
               </div>
             )}
 
+            {activeTab === "financials" && (
+              <div className="flex flex-col gap-4">
+                <FilterBar
+                  filters={filters}
+                  onChange={setFilters}
+                  onReset={() => setFilters(defaultFilters)}
+                />
+                <FinancialSummary projects={filtered} />
+              </div>
+            )}
+
             {activeTab === "committee" && (
               <CommitteeModule projects={filtered.length ? filtered : projects} isAdmin={isAdmin} />
             )}
@@ -220,7 +241,7 @@ const Index = () => {
       {/* Admin Login Modal */}
       {showLoginModal && (
         <AdminLoginModal
-          onLogin={signIn}
+          onLogin={handleAdminLogin}
           onClose={() => setShowLoginModal(false)}
         />
       )}
