@@ -12,6 +12,7 @@ import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
 import CommitteeModule from "@/components/dashboard/CommitteeModule";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
+import FinancialSummary from "@/components/dashboard/FinancialSummary";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useNavigate } from "react-router-dom";
@@ -71,6 +72,7 @@ const Index = () => {
     projects: "Projects",
     location: "Location",
     status: "Status",
+    financials: "Financials",
     committee: "PMC",
     whistleblower: "Report",
   };
@@ -96,6 +98,7 @@ const Index = () => {
             "projects",
             "location",
             "status",
+            "financials",
             "committee",
             "whistleblower",
           ] as TabId[]
@@ -212,6 +215,17 @@ const Index = () => {
                   onReset={() => setFilters(defaultFilters)}
                 />
                 <StatusFeedback projects={filtered} />
+              </div>
+            )}
+
+            {activeTab === "financials" && (
+              <div className="flex flex-col gap-4">
+                <FilterBar
+                  filters={filters}
+                  onChange={setFilters}
+                  onReset={() => setFilters(defaultFilters)}
+                />
+                <FinancialSummary projects={filtered} />
               </div>
             )}
 

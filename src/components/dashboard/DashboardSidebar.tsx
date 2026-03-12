@@ -8,6 +8,7 @@ import {
   LogOut,
   ShieldCheck,
   Users,
+  Banknote,
 } from "lucide-react";
 
 export type TabId =
@@ -15,6 +16,7 @@ export type TabId =
   | "projects"
   | "location"
   | "status"
+  | "financials"
   | "committee"
   | "whistleblower";
 
@@ -56,6 +58,12 @@ const tabs: {
     title: "Status & Feedback",
     sub: "Progress & comments",
     icon: MessageSquare,
+  },
+  {
+    id: "financials",
+    title: "Financial Summary",
+    sub: "Budget breakdowns",
+    icon: Banknote,
   },
   {
     id: "committee",
