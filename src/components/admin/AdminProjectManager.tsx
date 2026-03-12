@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { fetchProjects, createProject, updateProject, deleteProject, SUB_COUNTIES, SECTORS, STATUSES, FINANCIAL_YEARS, getWards } from "@/data/projects";
 import type { Project } from "@/data/projects";
+import CsvProjectImport from "./CsvProjectImport";
 
 type ProjectFormData = {
   name: string;
@@ -44,6 +45,7 @@ export default function AdminProjectManager() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [form, setForm] = useState<ProjectFormData>(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [csvOpen, setCsvOpen] = useState(false);
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects"],
@@ -134,9 +136,14 @@ export default function AdminProjectManager() {
           <h2 className="text-2xl font-bold tracking-tight">Project Management</h2>
           <p className="text-muted-foreground text-sm">Add, edit, and manage all county projects.</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 shrink-0">
-          <Plus className="w-4 h-4" /> Add Project
-        </Button>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" onClick={() => setCsvOpen(true)} className="gap-2">
+            <Upload className="w-4 h-4" /> Import CSV
+          </Button>
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="w-4 h-4" /> Add Project
+          </Button>
+        </div>
       </div>
 
       <Card className="border-border shadow-sm">
@@ -337,6 +344,8 @@ export default function AdminProjectManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* CSV Import */}
+      <CsvProjectImport open={csvOpen} onOpenChange={setCsvOpen} />
     </div>
   );
 }
