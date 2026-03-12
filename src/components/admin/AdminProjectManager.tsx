@@ -136,9 +136,14 @@ export default function AdminProjectManager() {
           <h2 className="text-2xl font-bold tracking-tight">Project Management</h2>
           <p className="text-muted-foreground text-sm">Add, edit, and manage all county projects.</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 shrink-0">
-          <Plus className="w-4 h-4" /> Add Project
-        </Button>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" onClick={() => setCsvOpen(true)} className="gap-2">
+            <Upload className="w-4 h-4" /> Import CSV
+          </Button>
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="w-4 h-4" /> Add Project
+          </Button>
+        </div>
       </div>
 
       <Card className="border-border shadow-sm">
