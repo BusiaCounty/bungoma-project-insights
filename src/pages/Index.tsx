@@ -14,6 +14,7 @@ import CommitteeModule from "@/components/dashboard/CommitteeModule";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useNavigate } from "react-router-dom";
 
 const defaultFilters: Filters = {
   subCounty: "all",
@@ -28,6 +29,7 @@ const Index = () => {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [dateTime, setDateTime] = useState(new Date());
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const navigate = useNavigate();
 
   const {
     isAdmin,
@@ -36,6 +38,11 @@ const Index = () => {
     signIn,
     signOut,
   } = useAdminAuth();
+
+  const handleAdminLogin = async (email: string, password: string) => {
+    await signIn(email, password);
+    navigate("/admin");
+  };
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects"],
@@ -108,7 +115,7 @@ const Index = () => {
 
         {/* Mobile admin toggle */}
         <button
-          onClick={isAdmin ? signOut : () => setShowLoginModal(true)}
+          onClick={isAdmin ? () => navigate("/admin") : () => setShowLoginModal(true)}
           className={`ml-auto flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
             isAdmin
               ? "bg-primary/10 text-primary border border-primary/20"
@@ -220,7 +227,7 @@ const Index = () => {
       {/* Admin Login Modal */}
       {showLoginModal && (
         <AdminLoginModal
-          onLogin={signIn}
+          onLogin={handleAdminLogin}
           onClose={() => setShowLoginModal(false)}
         />
       )}
