@@ -47,11 +47,11 @@ const WhistleblowerForm = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-semibold text-muted-foreground">Project Name (optional)</label>
-            <input className={inputClass} value={form.project_name} onChange={(e) => setForm({ ...form, project_name: e.target.value })} placeholder="e.g. Road Grading - Bumula" />
+            <input className={inputClass} value={form.project_name} onChange={(e) => setForm({ ...form, project_name: e.target.value })} placeholder="e.g. Road Grading - Matayos" />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-semibold text-muted-foreground">Sub County (optional)</label>
-            <input className={inputClass} value={form.sub_county} onChange={(e) => setForm({ ...form, sub_county: e.target.value })} placeholder="e.g. Kanduyi" />
+            <input className={inputClass} value={form.sub_county} onChange={(e) => setForm({ ...form, sub_county: e.target.value })} placeholder="e.g. Butula" />
           </div>
         </div>
         <div className="flex flex-col gap-1">
