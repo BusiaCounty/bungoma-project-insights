@@ -29,6 +29,12 @@ type ValidatedRow = CsvRow & {
 const REQUIRED_HEADERS = ["name", "sub_county", "ward", "sector", "fy"];
 const ALL_HEADERS = ["name", "description", "sub_county", "ward", "sector", "status", "fy", "budget", "progress"];
 
+type ProjectStatus = (typeof STATUSES)[number];
+
+function isProjectStatus(value: string): value is ProjectStatus {
+  return (STATUSES as readonly string[]).includes(value);
+}
+
 function parseCsv(text: string): { headers: string[]; rows: Record<string, string>[] } {
   const lines = text.split(/\r?\n/).filter((l) => l.trim());
   if (lines.length < 2) return { headers: [], rows: [] };
@@ -67,7 +73,7 @@ function validateRow(row: Record<string, string>, index: number): ValidatedRow {
     errors.push(`Invalid ward "${ward}" for ${sub_county}`);
   if (!sector) errors.push("Sector is required");
   else if (!SECTORS.includes(sector)) errors.push(`Invalid sector`);
-  if (!STATUSES.includes(status as any)) errors.push(`Invalid status: "${status}". Use: ${STATUSES.join(", ")}`);
+  if (!isProjectStatus(status)) errors.push(`Invalid status: "${status}". Use: ${STATUSES.join(", ")}`);
   if (!fy) errors.push("Financial year is required");
   else if (!FINANCIAL_YEARS.includes(fy)) errors.push(`Invalid FY: "${fy}"`);
   if (isNaN(Number(budget)) || Number(budget) < 0) errors.push("Budget must be a positive number");
@@ -88,14 +94,13 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
   const [rows, setRows] = useState<ValidatedRow[]>([]);
   const [importing, setImporting] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [isDragActive, setIsDragActive] = useState(false);
 
   const validRows = rows.filter((r) => r.errors.length === 0);
   const invalidRows = rows.filter((r) => r.errors.length > 0);
 
-  const handleFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.name.endsWith(".csv")) {
+  const processFile = useCallback((file: File) => {
+    if (!file.name.toLowerCase().endsWith(".csv")) {
       toast.error("Please upload a .csv file");
       return;
     }
@@ -103,10 +108,12 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
       toast.error("File too large (max 5MB)");
       return;
     }
+
     setFileName(file.name);
+
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const text = ev.target?.result as string;
+      const text = typeof ev.target?.result === "string" ? ev.target.result : "";
       const { headers, rows: parsed } = parseCsv(text);
 
       const missing = REQUIRED_HEADERS.filter((h) => !headers.includes(h));
@@ -125,6 +132,28 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
     };
     reader.readAsText(file);
   }, []);
+
+  const handleFile = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      processFile(file);
+    },
+    [processFile],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragActive(false);
+
+      const file = e.dataTransfer.files?.[0];
+      if (!file) return;
+      processFile(file);
+    },
+    [processFile],
+  );
 
   const handleImport = async () => {
     if (validRows.length === 0) return;
@@ -199,11 +228,39 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
           {rows.length === 0 && (
             <div className="space-y-3">
               <div
-                className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                className={[
+                  "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
+                  isDragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50",
+                ].join(" ")}
                 onClick={() => fileRef.current?.click()}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragActive(true);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragActive(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragActive(false);
+                }}
+                onDrop={handleDrop}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") fileRef.current?.click();
+                }}
               >
                 <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                <p className="text-sm font-medium">Click to select a CSV file</p>
+                <p className="text-sm font-medium">
+                  {isDragActive ? "Drop your CSV file here" : "Click or drag-and-drop a CSV file"}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Required columns: name, sub_county, ward, sector, fy
                 </p>
