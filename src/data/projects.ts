@@ -9,8 +9,8 @@ export const SUB_COUNTIES = [
   "Matayos",
   "Nambale",
   "Butula",
-  "Funyula",
-  "Budalang'i",
+  "Samia",
+  "Bunyala",
   "Teso North",
   "Teso South",
 ];
@@ -33,6 +33,13 @@ export const SECTORS = [
 export const STATUSES = ["Completed", "Ongoing", "Stalled"] as const;
 
 export const FINANCIAL_YEARS = [
+  "2013/2014",
+  "2014/2015",
+  "2015/2016",
+  "2016/2017",
+  "2017/2018",
+  "2018/2019",
+  "2019/2020",
   "2020/2021",
   "2021/2022",
   "2022/2023",
@@ -57,14 +64,14 @@ const WARDS: Record<string, string[]> = {
     "Marachi Central",
     "Marachi East",
   ],
-  Funyula: [
+  Samia: [
     "Funyula",
     "Nangina",
     "Agenga/Nanguba",
     "Bwiri",
     "Namboboto Nambuku",
   ],
-  "Budalang'i": [
+  "Bunyala": [
     "Bunyala Central",
     "Bunyala North",
     "Bunyala West",
