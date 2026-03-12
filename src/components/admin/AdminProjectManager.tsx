@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { fetchProjects, createProject, updateProject, deleteProject, SUB_COUNTIES, SECTORS, STATUSES, FINANCIAL_YEARS, getWards } from "@/data/projects";
 import type { Project } from "@/data/projects";
+import CsvProjectImport from "./CsvProjectImport";
 
 type ProjectFormData = {
   name: string;
