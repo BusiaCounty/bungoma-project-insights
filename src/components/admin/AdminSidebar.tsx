@@ -10,7 +10,9 @@ import {
   BarChart,
   Eye,
   ActivitySquare,
-  BellRing
+  BellRing,
+  ClipboardList,
+  MessageSquareText
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
