@@ -18,7 +18,7 @@ export const SUB_COUNTIES = [
 export const SECTORS = [
   "Health and Sanitation",
   "Education and Industrial Skills Development",
-  "Transport, Roads and Public Works",
+  "Transport Roads and Public Works",
   "Water, Irrigation, Environment, Natural Resources, Climate Change and Energy",
   "Smart Agriculture, Livestock, Fisheries, Blue Economy",
   "Energy",
