@@ -56,7 +56,7 @@ const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[
 
 export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
   return (
-    <aside className="h-screen sticky top-0 bg-card border-r border-border shadow-sm flex flex-col pt-6 pb-4 overflow-y-auto w-full max-lg:hidden flex-shrink-0 relative z-10">
+    <aside className="h-screen sticky top-0 bg-card border-r border-border shadow-sm flex flex-col pt-6 pb-4 overflow-y-auto w-80 min-w-[20rem] max-lg:hidden flex-shrink-0 relative z-10">
       <div className="px-6 pb-6 mb-6 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black shadow-md shadow-primary/30">
