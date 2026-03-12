@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 
 export type AdminTabId =
   | "overview"
+  | "project-manager"
   | "users"
   | "rbac"
   | "project-config"
@@ -25,6 +26,7 @@ export type AdminTabId =
   | "financials"
   | "documents"
   | "reports"
+  | "feedback"
   | "transparency"
   | "settings"
   | "audit"
