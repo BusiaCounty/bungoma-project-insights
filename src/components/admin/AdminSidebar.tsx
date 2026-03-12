@@ -10,12 +10,15 @@ import {
   BarChart,
   Eye,
   ActivitySquare,
-  BellRing
+  BellRing,
+  ClipboardList,
+  MessageSquareText
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export type AdminTabId =
   | "overview"
+  | "project-manager"
   | "users"
   | "rbac"
   | "project-config"
@@ -23,6 +26,7 @@ export type AdminTabId =
   | "financials"
   | "documents"
   | "reports"
+  | "feedback"
   | "transparency"
   | "settings"
   | "audit"
@@ -35,6 +39,7 @@ interface AdminSidebarProps {
 
 const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
+  { id: "project-manager", label: "Project Management", icon: ClipboardList },
   { id: "users", label: "User Management", icon: Users },
   { id: "rbac", label: "Access Control (RBAC)", icon: Shield },
   { id: "project-config", label: "Project Config", icon: FolderTree },
@@ -42,6 +47,7 @@ const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[
   { id: "financials", label: "Financial Controls", icon: Banknote },
   { id: "documents", label: "Media & Documents", icon: Files },
   { id: "reports", label: "Reports & Analytics", icon: BarChart },
+  { id: "feedback", label: "Citizen Feedback", icon: MessageSquareText },
   { id: "transparency", label: "Public Portal Views", icon: Eye },
   { id: "settings", label: "System Settings", icon: Settings },
   { id: "audit", label: "Audit & Security", icon: ActivitySquare },

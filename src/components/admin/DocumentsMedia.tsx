@@ -36,7 +36,7 @@ export default function DocumentsMedia() {
                         <span className="font-semibold text-foreground">420.5 GB Used</span>
                         <span className="text-muted-foreground text-xs font-bold pt-1">500.0 GB Total</span>
                     </div>
-                    <Progress value={84} className="h-3" indicatorColor="bg-primary" />
+                    <Progress value={84} className="h-3" />
                     <p className="text-xs text-amber-600 font-semibold flex items-center gap-1 mt-2">
                         <ShieldAlert className="w-3.5 h-3.5" /> Approaching storage quota limits. Consider upgrading or archiving old data.
                     </p>
