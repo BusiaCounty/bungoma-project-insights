@@ -344,6 +344,8 @@ export default function AdminProjectManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* CSV Import */}
+      <CsvProjectImport open={csvOpen} onOpenChange={setCsvOpen} />
     </div>
   );
 }
