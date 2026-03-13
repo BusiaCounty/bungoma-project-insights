@@ -225,6 +225,14 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
             </tbody>
           </table>
         </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          pageSize={PROJECTS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Modals */}

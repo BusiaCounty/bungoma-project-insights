@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, Star, MessageSquare, Loader2 } from "lucide-react";
 import { fetchFeedback } from "@/data/projects";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "@/components/dashboard/PaginationControls";
 
 export default function AdminFeedbackViewer() {
   const [searchTerm, setSearchTerm] = useState("");
