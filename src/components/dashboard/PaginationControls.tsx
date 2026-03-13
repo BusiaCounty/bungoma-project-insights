@@ -1,4 +1,11 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -7,6 +14,8 @@ interface PaginationControlsProps {
   startIndex: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  pageSizeOptions?: number[];
+  onPageSizeChange?: (size: number) => void;
 }
 
 const PaginationControls = ({
