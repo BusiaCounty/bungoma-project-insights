@@ -5,6 +5,8 @@ import ProjectFormModal from "./ProjectFormModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import { createProject, updateProject, deleteProject } from "@/data/projects";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "./PaginationControls";
 
 interface ProjectsTableProps {
   projects: Project[];
@@ -23,9 +25,13 @@ type ModalState =
   | { type: "delete"; project: Project }
   | null;
 
+const PROJECTS_PER_PAGE = 15;
+
 const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<ModalState>(null);
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex } =
+    usePagination(projects, PROJECTS_PER_PAGE);
 
   const exportData = (format: "csv" | "excel") => {
     if (!projects.length) return;
@@ -136,12 +142,12 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
               </tr>
             </thead>
             <tbody>
-              {projects.map((p, i) => (
+              {paginatedItems.map((p, i) => (
                 <tr
                   key={p.id}
                   className="border-b border-border/50 hover:bg-muted/30 transition-colors"
                 >
-                  <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{startIndex + i + 1}</td>
                   <td className="px-3 py-2 font-medium max-w-[220px] truncate">
                     {p.name}
                   </td>
@@ -219,6 +225,14 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
             </tbody>
           </table>
         </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          pageSize={PROJECTS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Modals */}
