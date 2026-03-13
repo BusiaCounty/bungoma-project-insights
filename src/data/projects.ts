@@ -20,7 +20,7 @@ export const SECTORS = [
   "Education and Industrial Skills Development",
   "Transport Roads and Public Works",
   "Water, Irrigation, Environment, Natural Resources, Climate Change and Energy",
-  "Smart Agriculture, Livestock, Fisheries, Blue Economy",
+  "Smart Agriculture Livestock Fisheries Blue Economy",
   "Energy",
   "Trade, Investment, Industrialization, Cooperatives and Small Micro Enterprises (SME)",
   "Strategic Partnerships, ICT and Digital Economy",
