@@ -25,13 +25,13 @@ type ModalState =
   | { type: "delete"; project: Project }
   | null;
 
-const PROJECTS_PER_PAGE = 15;
+const PAGE_SIZE_OPTIONS = [10, 15, 25, 50];
 
 const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<ModalState>(null);
-  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex } =
-    usePagination(projects, PROJECTS_PER_PAGE);
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, pageSize, setPageSize } =
+    usePagination(projects, 15);
 
   const exportData = (format: "csv" | "excel") => {
     if (!projects.length) return;
