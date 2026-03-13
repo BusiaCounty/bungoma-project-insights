@@ -25,6 +25,8 @@ const PaginationControls = ({
   startIndex,
   pageSize,
   onPageChange,
+  pageSizeOptions,
+  onPageSizeChange,
 }: PaginationControlsProps) => {
   if (totalPages <= 1) return null;
 
