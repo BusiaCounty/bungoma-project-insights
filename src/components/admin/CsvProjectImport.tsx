@@ -173,6 +173,8 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
           fy: row.fy,
           budget: Number(row.budget) || 0,
           progress: Number(row.progress) || 0,
+          actual_spend: 0,
+          projected_cost: null,
         });
         success++;
       } catch {
