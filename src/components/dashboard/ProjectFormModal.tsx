@@ -19,6 +19,8 @@ type ProjectFormData = {
   fy: string;
   progress: number;
   description: string;
+   projected_cost: number | null;
+   actual_spend: number;
 };
 
 interface ProjectFormModalProps {
@@ -37,6 +39,8 @@ const defaultForm: ProjectFormData = {
   fy: FINANCIAL_YEARS[FINANCIAL_YEARS.length - 1],
   progress: 0,
   description: "",
+  projected_cost: null,
+  actual_spend: 0,
 };
 
 const ProjectFormModal = ({
@@ -62,6 +66,8 @@ const ProjectFormModal = ({
         fy: project.fy,
         progress: project.progress,
         description: project.description ?? "",
+        projected_cost: project.projected_cost ?? null,
+        actual_spend: Number(project.actual_spend ?? 0),
       });
     } else {
       setForm(defaultForm);
@@ -315,6 +321,48 @@ const ProjectFormModal = ({
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Financial Details (2-col) */}
+            <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+              <div className="flex flex-col gap-1.5">
+                <label className={labelClass} htmlFor="proj-projected">
+                  Projected Cost (KES)
+                </label>
+                <input
+                  id="proj-projected"
+                  type="number"
+                  min={0}
+                  value={form.projected_cost ?? ""}
+                  onChange={(e) =>
+                    set(
+                      "projected_cost",
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
+                  }
+                  placeholder="Optional projected total cost"
+                  className={inputClass}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className={labelClass} htmlFor="proj-actual">
+                  Actual Spend (KES)
+                </label>
+                <input
+                  id="proj-actual"
+                  type="number"
+                  min={0}
+                  value={form.actual_spend}
+                  onChange={(e) =>
+                    set(
+                      "actual_spend",
+                      Number(e.target.value),
+                    )
+                  }
+                  placeholder="Amount spent so far"
+                  className={inputClass}
+                />
               </div>
             </div>
 

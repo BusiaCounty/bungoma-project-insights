@@ -24,6 +24,8 @@ type ProjectFormData = {
   fy: string;
   budget: number;
   progress: number;
+  projected_cost: number | null;
+  actual_spend: number;
 };
 
 const emptyForm: ProjectFormData = {
@@ -36,6 +38,8 @@ const emptyForm: ProjectFormData = {
   fy: "",
   budget: 0,
   progress: 0,
+  projected_cost: null,
+  actual_spend: 0,
 };
 
 export default function AdminProjectManager() {
@@ -102,6 +106,8 @@ export default function AdminProjectManager() {
       fy: project.fy,
       budget: project.budget,
       progress: project.progress,
+      projected_cost: project.projected_cost ?? null,
+      actual_spend: Number(project.actual_spend ?? 0),
     });
     setDialogOpen(true);
   };
@@ -314,6 +320,37 @@ export default function AdminProjectManager() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Progress (%)</label>
                 <Input type="number" min={0} max={100} value={form.progress} onChange={(e) => setForm({ ...form, progress: Number(e.target.value) })} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Projected Cost (KES)</label>
+                <Input
+                  type="number"
+                  value={form.projected_cost ?? ""}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      projected_cost: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                  placeholder="Optional projected total cost"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Actual Spend (KES)</label>
+                <Input
+                  type="number"
+                  value={form.actual_spend}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      actual_spend: Number(e.target.value),
+                    })
+                  }
+                  placeholder="Amount spent so far"
+                />
               </div>
             </div>
 
