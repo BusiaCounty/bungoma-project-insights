@@ -23,6 +23,10 @@ export default function AdminFeedbackViewer() {
       f.comment?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const FEEDBACK_PER_PAGE = 10;
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex } =
+    usePagination(filtered, FEEDBACK_PER_PAGE);
+
   const avgRating = feedback.length
     ? (feedback.reduce((sum, f) => sum + (f.rating || 0), 0) / feedback.filter(f => f.rating).length).toFixed(1)
     : "N/A";
