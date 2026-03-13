@@ -230,8 +230,10 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
           totalPages={totalPages}
           totalItems={totalItems}
           startIndex={startIndex}
-          pageSize={PROJECTS_PER_PAGE}
+          pageSize={pageSize}
           onPageChange={setCurrentPage}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          onPageSizeChange={setPageSize}
         />
       </div>
 
