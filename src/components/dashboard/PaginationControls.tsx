@@ -1,4 +1,11 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -7,6 +14,8 @@ interface PaginationControlsProps {
   startIndex: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  pageSizeOptions?: number[];
+  onPageSizeChange?: (size: number) => void;
 }
 
 const PaginationControls = ({
@@ -16,6 +25,8 @@ const PaginationControls = ({
   startIndex,
   pageSize,
   onPageChange,
+  pageSizeOptions,
+  onPageSizeChange,
 }: PaginationControlsProps) => {
   if (totalPages <= 1) return null;
 
@@ -39,9 +50,31 @@ const PaginationControls = ({
 
   return (
     <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-      <p className="text-[11px] text-muted-foreground">
-        Showing {startIndex + 1}–{endIndex} of {totalItems}
-      </p>
+      <div className="flex items-center gap-3">
+        <p className="text-[11px] text-muted-foreground">
+          Showing {startIndex + 1}–{endIndex} of {totalItems}
+        </p>
+        {pageSizeOptions && onPageSizeChange && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-muted-foreground">Rows:</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => onPageSizeChange(Number(v))}
+            >
+              <SelectTrigger className="h-7 w-[60px] text-[11px] border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {pageSizeOptions.map((size) => (
+                  <SelectItem key={size} value={String(size)} className="text-[11px]">
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
