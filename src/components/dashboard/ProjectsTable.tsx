@@ -69,7 +69,7 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "bungoma_projects.csv";
+      a.download = "busia_projects.csv";
       a.click();
       URL.revokeObjectURL(url);
     } else {
