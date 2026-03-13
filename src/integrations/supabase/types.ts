@@ -178,7 +178,6 @@ export type Database = {
       }
       projects: {
         Row: {
-          actual_spend: number
           budget: number
           created_at: string
           description: string | null
@@ -186,7 +185,6 @@ export type Database = {
           id: string
           name: string
           progress: number
-          projected_cost: number | null
           sector: string
           status: Database["public"]["Enums"]["project_status"]
           sub_county: string
@@ -194,7 +192,6 @@ export type Database = {
           ward: string
         }
         Insert: {
-          actual_spend?: number
           budget?: number
           created_at?: string
           description?: string | null
@@ -202,7 +199,6 @@ export type Database = {
           id?: string
           name: string
           progress?: number
-          projected_cost?: number | null
           sector: string
           status?: Database["public"]["Enums"]["project_status"]
           sub_county: string
@@ -210,7 +206,6 @@ export type Database = {
           ward: string
         }
         Update: {
-          actual_spend?: number
           budget?: number
           created_at?: string
           description?: string | null
@@ -218,7 +213,6 @@ export type Database = {
           id?: string
           name?: string
           progress?: number
-          projected_cost?: number | null
           sector?: string
           status?: Database["public"]["Enums"]["project_status"]
           sub_county?: string
