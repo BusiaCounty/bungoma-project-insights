@@ -139,7 +139,7 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-foreground tracking-tight">
-                County Government of Busia
+                Busia County Executive Dashboard
               </h1>
               <p className="text-xs text-muted-foreground">
                 Projects Stock Dashboard — Interactive analytics and summaries
