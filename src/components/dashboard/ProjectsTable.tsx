@@ -142,12 +142,12 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
               </tr>
             </thead>
             <tbody>
-              {projects.map((p, i) => (
+              {paginatedItems.map((p, i) => (
                 <tr
                   key={p.id}
                   className="border-b border-border/50 hover:bg-muted/30 transition-colors"
                 >
-                  <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{startIndex + i + 1}</td>
                   <td className="px-3 py-2 font-medium max-w-[220px] truncate">
                     {p.name}
                   </td>
