@@ -145,6 +145,14 @@ export default function AdminFeedbackViewer() {
                 </TableBody>
               </Table>
             </div>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              pageSize={FEEDBACK_PER_PAGE}
+              onPageChange={setCurrentPage}
+            />
           )}
         </CardContent>
       </Card>
