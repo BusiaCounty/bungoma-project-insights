@@ -5,6 +5,8 @@ import ProjectFormModal from "./ProjectFormModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import { createProject, updateProject, deleteProject } from "@/data/projects";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "./PaginationControls";
 
 interface ProjectsTableProps {
   projects: Project[];
