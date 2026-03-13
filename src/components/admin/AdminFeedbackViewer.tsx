@@ -112,7 +112,7 @@ export default function AdminFeedbackViewer() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filtered.map((item) => (
+                    paginatedItems.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium text-sm">{item.author_name || "Anonymous"}</TableCell>
                         <TableCell className="text-sm max-w-[300px]">
