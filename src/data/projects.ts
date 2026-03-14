@@ -94,7 +94,7 @@ const WARDS: Record<string, string[]> = {
     "Amukura West",
     "Amukura Central",
     "Amukura East",
-    "Kakurio",
+    "Angorom",
   ],
   "Countywide": [
     "Countywide",
