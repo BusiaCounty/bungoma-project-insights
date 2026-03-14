@@ -29,6 +29,7 @@ export const SECTORS = [
   "The County Treasury and Economic Planning",
   "Lands Housing and Urban Development",
   "Public Service Management & Governance",
+  "Governorship",
 ];
 
 export const STATUSES = ["Completed", "Ongoing", "Stalled"] as const;
