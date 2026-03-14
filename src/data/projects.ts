@@ -13,6 +13,7 @@ export const SUB_COUNTIES = [
   "Bunyala",
   "Teso North",
   "Teso South",
+  "Countywide",
 ];
 
 export const SECTORS = [
@@ -95,7 +96,11 @@ const WARDS: Record<string, string[]> = {
     "Amukura East",
     "Kakurio",
   ],
+  "Countywide": [
+    "Countywide",
+  ],
 };
+
 
 export const getWards = (subCounty?: string) => {
   if (!subCounty || subCounty === "all") return Object.values(WARDS).flat();
