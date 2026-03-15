@@ -141,6 +141,41 @@ export type Database = {
           },
         ]
       }
+      feedback_replies: {
+        Row: {
+          author_name: string
+          created_at: string
+          feedback_id: string
+          id: string
+          is_admin: boolean
+          message: string
+        }
+        Insert: {
+          author_name?: string
+          created_at?: string
+          feedback_id: string
+          id?: string
+          is_admin?: boolean
+          message: string
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          feedback_id?: string
+          id?: string
+          is_admin?: boolean
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_replies_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "project_feedback"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -179,6 +214,7 @@ export type Database = {
           id: string
           project_id: string | null
           rating: number | null
+          status: string
         }
         Insert: {
           author_name?: string
@@ -187,6 +223,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           rating?: number | null
+          status?: string
         }
         Update: {
           author_name?: string
@@ -195,6 +232,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           rating?: number | null
+          status?: string
         }
         Relationships: [
           {
