@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 
 const allTabs: AdminTabId[] = [
   "overview", "project-manager", "users", "rbac", "project-config", "geo-admin",
-  "financials", "documents", "reports", "feedback", "transparency", "settings", "audit", "notifications",
+  "financials", "documents", "reports", "feedback", "feedback-analytics", "transparency", "settings", "audit", "notifications",
 ];
 
 export default function Admin() {
