@@ -138,6 +138,36 @@ export async function fetchFeedback(projectId?: string) {
   return data || [];
 }
 
+export async function updateFeedbackStatus(feedbackId: string, status: string) {
+  const { error } = await supabase
+    .from("project_feedback")
+    .update({ status })
+    .eq("id", feedbackId);
+  if (error) throw error;
+}
+
+export async function fetchFeedbackReplies(feedbackId: string) {
+  const { data, error } = await supabase
+    .from("feedback_replies" as any)
+    .select("*")
+    .eq("feedback_id", feedbackId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data || []) as any[];
+}
+
+export async function submitFeedbackReply(reply: {
+  feedback_id: string;
+  author_name: string;
+  message: string;
+  is_admin: boolean;
+}) {
+  const { error } = await supabase
+    .from("feedback_replies" as any)
+    .insert(reply);
+  if (error) throw error;
+}
+
 export async function createProject(
   project: Omit<Tables<"projects">, "id" | "created_at" | "updated_at">,
 ): Promise<Project> {
