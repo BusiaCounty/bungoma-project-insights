@@ -50,6 +50,7 @@ const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[
   { id: "documents", label: "Media & Documents", icon: Files },
   { id: "reports", label: "Reports & Analytics", icon: BarChart },
   { id: "feedback", label: "Citizen Feedback", icon: MessageSquareText },
+  { id: "feedback-analytics", label: "Feedback Analytics", icon: TrendingUp },
   { id: "transparency", label: "Public Portal Views", icon: Eye },
   { id: "settings", label: "System Settings", icon: Settings },
   { id: "audit", label: "Audit & Security", icon: ActivitySquare },
