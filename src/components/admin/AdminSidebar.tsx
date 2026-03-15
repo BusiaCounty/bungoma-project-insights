@@ -12,7 +12,8 @@ import {
   ActivitySquare,
   BellRing,
   ClipboardList,
-  MessageSquareText
+  MessageSquareText,
+  TrendingUp
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
