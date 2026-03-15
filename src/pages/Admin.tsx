@@ -68,6 +68,7 @@ export default function Admin() {
           {activeTab === "documents" && <DocumentsMedia />}
           {activeTab === "reports" && <ReportsAnalytics />}
           {activeTab === "feedback" && <AdminFeedbackViewer />}
+          {activeTab === "feedback-analytics" && <FeedbackAnalytics />}
           {activeTab === "transparency" && <PublicPortalConfig />}
           {activeTab === "settings" && <SystemSettings />}
           {activeTab === "audit" && <AuditSecurity />}
