@@ -27,6 +27,7 @@ export type AdminTabId =
   | "documents"
   | "reports"
   | "feedback"
+  | "feedback-analytics"
   | "transparency"
   | "settings"
   | "audit"
