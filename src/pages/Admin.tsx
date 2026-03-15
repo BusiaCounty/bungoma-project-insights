@@ -11,6 +11,7 @@ import FinancialControls from "@/components/admin/FinancialControls";
 import DocumentsMedia from "@/components/admin/DocumentsMedia";
 import ReportsAnalytics from "@/components/admin/ReportsAnalytics";
 import AdminFeedbackViewer from "@/components/admin/AdminFeedbackViewer";
+import FeedbackAnalytics from "@/components/admin/FeedbackAnalytics";
 import PublicPortalConfig from "@/components/admin/PublicPortalConfig";
 import SystemSettings from "@/components/admin/SystemSettings";
 import AuditSecurity from "@/components/admin/AuditSecurity";
