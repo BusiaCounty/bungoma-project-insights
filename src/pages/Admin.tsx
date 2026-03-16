@@ -11,6 +11,7 @@ import FinancialControls from "@/components/admin/FinancialControls";
 import DocumentsMedia from "@/components/admin/DocumentsMedia";
 import ReportsAnalytics from "@/components/admin/ReportsAnalytics";
 import AdminFeedbackViewer from "@/components/admin/AdminFeedbackViewer";
+import FeedbackAnalytics from "@/components/admin/FeedbackAnalytics";
 import PublicPortalConfig from "@/components/admin/PublicPortalConfig";
 import SystemSettings from "@/components/admin/SystemSettings";
 import AuditSecurity from "@/components/admin/AuditSecurity";
@@ -19,7 +20,7 @@ import { Link } from "react-router-dom";
 
 const allTabs: AdminTabId[] = [
   "overview", "project-manager", "users", "rbac", "project-config", "geo-admin",
-  "financials", "documents", "reports", "feedback", "transparency", "settings", "audit", "notifications",
+  "financials", "documents", "reports", "feedback", "feedback-analytics", "transparency", "settings", "audit", "notifications",
 ];
 
 export default function Admin() {
@@ -67,6 +68,7 @@ export default function Admin() {
           {activeTab === "documents" && <DocumentsMedia />}
           {activeTab === "reports" && <ReportsAnalytics />}
           {activeTab === "feedback" && <AdminFeedbackViewer />}
+          {activeTab === "feedback-analytics" && <FeedbackAnalytics />}
           {activeTab === "transparency" && <PublicPortalConfig />}
           {activeTab === "settings" && <SystemSettings />}
           {activeTab === "audit" && <AuditSecurity />}
