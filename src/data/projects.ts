@@ -22,7 +22,6 @@ export const SECTORS = [
   "Transport Roads and Public Works",
   "Water Irrigation Environment Natural Resources Climate Change and Energy",
   "Smart Agriculture Livestock Fisheries Blue Economy",
-  "Energy",
   "Trade Investment Industrialization Cooperatives and Small Micro Enterprises (SME)",
   "Strategic Partnership ICT and Digital Economy",
   "Youth Sports Tourism Culture Social Protection Gender Affairs and Creative Arts",
