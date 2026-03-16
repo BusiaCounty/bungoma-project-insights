@@ -78,7 +78,7 @@ const WARDS: Record<string, string[]> = {
     "Bunyala North",
     "Bunyala West",
     "Bunyala East",
-    "Khajula",
+    "Bunyala South",
     "Port Victoria",
   ],
   "Teso North": [
