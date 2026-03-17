@@ -1,102 +1,278 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Map, MapPin, Edit, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Edit, Search, Navigation, Building2, BarChart3 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { SUB_COUNTIES, getWards } from "@/data/projects";
+import type { Tables } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+
+type Project = Tables<"projects">;
 
 export default function GeoAdmin() {
-  const geoStructure = [
-    {
-      county: "Bungoma County",
-      subCounties: [
-        { name: "Kanduyi", wards: ["Township", "Khalaba", "Bukembe West"] },
-        { name: "Webuye West", wards: ["Misikhu", "Bokoli", "Matulo"] },
-        { name: "Kimilili", wards: ["Kibingei", "Kamtukwii", "Kimilili Rural"] },
-      ]
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filterSubCounty, setFilterSubCounty] = useState<string>("all");
+  const [editProject, setEditProject] = useState<Project | null>(null);
+  const [editSubCounty, setEditSubCounty] = useState("");
+  const [editWard, setEditWard] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .order("sub_county", { ascending: true });
+    if (error) {
+      toast.error("Failed to load projects");
+    } else {
+      setProjects(data || []);
     }
-  ];
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchProjects(); }, []);
+
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch =
+      !search ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.ward.toLowerCase().includes(search.toLowerCase());
+    const matchesSubCounty =
+      filterSubCounty === "all" || p.sub_county === filterSubCounty;
+    return matchesSearch && matchesSubCounty;
+  });
+
+  // Group projects by sub-county -> ward
+  const grouped: Record<string, Record<string, Project[]>> = {};
+  filteredProjects.forEach((p) => {
+    if (!grouped[p.sub_county]) grouped[p.sub_county] = {};
+    if (!grouped[p.sub_county][p.ward]) grouped[p.sub_county][p.ward] = [];
+    grouped[p.sub_county][p.ward].push(p);
+  });
+
+  // Stats
+  const subCountyCounts = SUB_COUNTIES.filter(s => s !== "Countywide").map((sc) => ({
+    name: sc,
+    count: projects.filter((p) => p.sub_county === sc).length,
+  }));
+  const maxCount = Math.max(...subCountyCounts.map((s) => s.count), 1);
+
+  const openEdit = (project: Project) => {
+    setEditProject(project);
+    setEditSubCounty(project.sub_county);
+    setEditWard(project.ward);
+  };
+
+  const handleSave = async () => {
+    if (!editProject || !editSubCounty || !editWard) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("projects")
+      .update({ sub_county: editSubCounty, ward: editWard, updated_at: new Date().toISOString() })
+      .eq("id", editProject.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Failed to update location");
+    } else {
+      toast.success(`Location updated for "${editProject.name}"`);
+      setEditProject(null);
+      fetchProjects();
+    }
+  };
+
+  const availableWards = getWards(editSubCounty);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Geographic Administration</h2>
-          <p className="text-muted-foreground text-sm">Configure locations, sub-counties, wards, and map settings.</p>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Project Location Management</h2>
+        <p className="text-muted-foreground text-sm">View and update project locations across sub-counties and wards.</p>
+      </div>
+
+      {/* Stats bar */}
+      <Card className="border-border shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" /> Distribution by Sub-County
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {subCountyCounts.map((sc) => (
+              <div key={sc.name} className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="font-medium text-foreground truncate">{sc.name}</span>
+                  <span className="text-muted-foreground font-bold">{sc.count}</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all"
+                    style={{ width: `${(sc.count / maxCount) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by project name or ward..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-        <Button className="gap-2 shrink-0">
-          <Map className="w-4 h-4" /> Manage Map Layers
-        </Button>
+        <Select value={filterSubCounty} onValueChange={setFilterSubCounty}>
+          <SelectTrigger className="w-full sm:w-52">
+            <SelectValue placeholder="All Sub-Counties" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Sub-Counties</SelectItem>
+            {SUB_COUNTIES.map((sc) => (
+              <SelectItem key={sc} value={sc}>{sc}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="space-y-1">
-              <CardTitle>Administrative Hierarchy</CardTitle>
-              <CardDescription>Regions used for project assignment.</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-             <Accordion type="single" collapsible className="w-full">
-                {geoStructure.map((system) => (
-                  <AccordionItem value="item-1" key={system.county}>
-                    <AccordionTrigger className="font-bold text-base hover:no-underline">
-                       <div className="flex items-center gap-2"><MapPin className="w-5 h-5 text-primary"/>{system.county}</div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pl-6 space-y-4">
-                        {system.subCounties.map(sub => (
-                           <div key={sub.name} className="border border-border rounded-lg overflow-hidden">
-                               <div className="bg-muted p-2 flex justify-between items-center font-medium">
-                                   <span className="text-sm">{sub.name} Sub-County</span>
-                                    <div className="flex gap-1">
-                                       <Button variant="ghost" size="icon" className="h-6 w-6"><Edit className="w-3 h-3 text-muted-foreground"/></Button>
-                                       <Button variant="ghost" size="icon" className="h-6 w-6"><Plus className="w-3 h-3 text-muted-foreground"/></Button>
-                                   </div>
-                               </div>
-                               <div className="p-2 space-y-1">
-                                   {sub.wards.map(ward => (
-                                       <div key={ward} className="text-xs text-muted-foreground pl-4 py-1 flex items-center gap-2">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-border"></div> {ward} Ward
-                                       </div>
-                                   ))}
-                               </div>
-                           </div>
+      {/* Project list grouped by location */}
+      {loading ? (
+        <div className="text-center py-12 text-muted-foreground">Loading projects...</div>
+      ) : Object.keys(grouped).length === 0 ? (
+        <Card className="border-border">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No projects found matching your filters.
+          </CardContent>
+        </Card>
+      ) : (
+        <Accordion type="multiple" className="space-y-3">
+          {Object.entries(grouped)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([subCounty, wards]) => {
+              const totalInSc = Object.values(wards).flat().length;
+              return (
+                <AccordionItem key={subCounty} value={subCounty} className="border border-border rounded-xl overflow-hidden bg-card">
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
+                    <div className="flex items-center gap-3 w-full">
+                      <Building2 className="w-5 h-5 text-primary shrink-0" />
+                      <span className="font-bold text-sm">{subCounty} Sub-County</span>
+                      <Badge variant="secondary" className="ml-auto mr-2 text-xs">{totalInSc} projects</Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4 pt-0">
+                    <div className="space-y-4">
+                      {Object.entries(wards)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([ward, wardProjects]) => (
+                          <div key={ward}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Navigation className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{ward} Ward</span>
+                              <span className="text-xs text-muted-foreground">({wardProjects.length})</span>
+                            </div>
+                            <div className="space-y-1.5 pl-5">
+                              {wardProjects.map((project) => (
+                                <div
+                                  key={project.id}
+                                  className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border bg-background hover:bg-muted/30 transition-colors group"
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-medium truncate">{project.name}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {project.sector} · FY {project.fy}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <Badge
+                                      variant={project.status === "Completed" ? "default" : project.status === "Ongoing" ? "secondary" : "destructive"}
+                                      className="text-[10px]"
+                                    >
+                                      {project.status}
+                                    </Badge>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={() => openEdit(project)}
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         ))}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-            </Accordion>
-          </CardContent>
-        </Card>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+        </Accordion>
+      )}
 
-        {/* GIS Settings */}
-        <Card className="border-border shadow-sm">
-          <CardHeader>
-            <CardTitle>GIS Integration Settings</CardTitle>
-            <CardDescription>Configure map providers and geographic bounds.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-              <div className="p-4 rounded-lg bg-card border border-border flex flex-col gap-1">
-                  <span className="text-sm font-semibold">Map Provider Layer URL</span>
-                  <code className="text-xs bg-muted p-2 rounded text-muted-foreground mt-1 block w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                      {"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
-                  </code>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-card border border-border flex flex-col gap-1 text-sm">
-                      <span className="font-semibold">Default Coordinates</span>
-                      <span className="text-muted-foreground">0.5695° N, 34.5584° E</span>
-                  </div>
-                   <div className="p-4 rounded-lg bg-card border border-border flex flex-col gap-1 text-sm">
-                      <span className="font-semibold">Default Zoom Level</span>
-                      <span className="text-muted-foreground text-xl font-bold">11</span>
-                  </div>
-              </div>
-              
-              <Button variant="outline" className="w-full">Update Coordinates</Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Edit Location Dialog */}
+      <Dialog open={!!editProject} onOpenChange={(open) => !open && setEditProject(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Project Location</DialogTitle>
+            <DialogDescription>
+              Change the sub-county and ward for <span className="font-semibold text-foreground">{editProject?.name}</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Sub-County</Label>
+              <Select value={editSubCounty} onValueChange={(val) => { setEditSubCounty(val); setEditWard(""); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sub-county" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUB_COUNTIES.map((sc) => (
+                    <SelectItem key={sc} value={sc}>{sc}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Ward</Label>
+              <Select value={editWard} onValueChange={setEditWard}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select ward" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableWards.map((w) => (
+                    <SelectItem key={w} value={w}>{w}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditProject(null)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving || !editSubCounty || !editWard}>
+              {saving ? "Saving..." : "Save Location"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
