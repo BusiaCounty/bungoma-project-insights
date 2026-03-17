@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Project } from "@/data/projects";
-import { Badge } from "@/components/ui/badge";
 
 // Fix default marker icon issue with webpack/vite
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
@@ -30,7 +29,7 @@ const statusIcons: Record<string, L.Icon> = {
   Stalled: createColorIcon("red"),
 };
 
-// Component to fit map bounds to markers
+// Child component to fit map bounds to markers
 function FitBounds({ projects }: { projects: Project[] }) {
   const map = useMap();
 
@@ -48,6 +47,30 @@ function FitBounds({ projects }: { projects: Project[] }) {
   return null;
 }
 
+// Child component to handle panning to a highlighted project
+function PanToHighlight({
+  highlightedId,
+  projects,
+}: {
+  highlightedId: string | null;
+  projects: Project[];
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!highlightedId) return;
+    const project = projects.find((p) => p.id === highlightedId);
+    if (project && project.latitude != null && project.longitude != null) {
+      map.setView([project.latitude, project.longitude], 15, {
+        animate: true,
+        duration: 0.8,
+      });
+    }
+  }, [highlightedId, projects, map]);
+
+  return null;
+}
+
 interface ProjectLocationMapProps {
   projects: Project[];
   onProjectClick?: (project: Project) => void;
@@ -61,9 +84,6 @@ export default function ProjectLocationMap({
   highlightedId,
   className = "",
 }: ProjectLocationMapProps) {
-  const mapRef = useRef<L.Map | null>(null);
-  const [isReady, setIsReady] = useState(false);
-
   // Only show projects with valid coordinates
   const mappableProjects = projects.filter(
     (p) => p.latitude != null && p.longitude != null
@@ -78,19 +98,6 @@ export default function ProjectLocationMap({
     if (s === "Ongoing") return "bg-blue-500/15 text-blue-600 border-blue-200";
     return "bg-amber-500/15 text-amber-600 border-amber-200";
   };
-
-  // Pan to highlighted project
-  useEffect(() => {
-    if (highlightedId && mapRef.current) {
-      const project = mappableProjects.find((p) => p.id === highlightedId);
-      if (project && project.latitude != null && project.longitude != null) {
-        mapRef.current.setView([project.latitude, project.longitude], 15, {
-          animate: true,
-          duration: 0.8,
-        });
-      }
-    }
-  }, [highlightedId, mappableProjects]);
 
   return (
     <div className={`relative rounded-xl overflow-hidden border border-border shadow-sm ${className}`}>
@@ -128,8 +135,6 @@ export default function ProjectLocationMap({
         zoom={defaultZoom}
         scrollWheelZoom
         className="w-full h-full min-h-[500px]"
-        ref={mapRef}
-        whenReady={() => setIsReady(true)}
         style={{ background: "#1a1a2e" }}
       >
         <TileLayer
@@ -137,7 +142,8 @@ export default function ProjectLocationMap({
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
 
-        {isReady && <FitBounds projects={projects} />}
+        <FitBounds projects={projects} />
+        <PanToHighlight highlightedId={highlightedId ?? null} projects={mappableProjects} />
 
         {mappableProjects.map((project) => (
           <Marker
