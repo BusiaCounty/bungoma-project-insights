@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Plus, Pencil, Trash2, Loader2, Upload } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Plus, Pencil, Trash2, Loader2, Upload, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { fetchProjects, createProject, updateProject, deleteProject, SUB_COUNTIES, SECTORS, STATUSES, FINANCIAL_YEARS, getWards } from "@/data/projects";
+import { fetchProjects, createProject, updateProject, deleteProject, bulkUpdateProjectLocation, SUB_COUNTIES, SECTORS, STATUSES, FINANCIAL_YEARS, getWards } from "@/data/projects";
 import type { Project } from "@/data/projects";
 import CsvProjectImport from "./CsvProjectImport";
 
@@ -50,6 +51,9 @@ export default function AdminProjectManager() {
   const [form, setForm] = useState<ProjectFormData>(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [csvOpen, setCsvOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkLocationOpen, setBulkLocationOpen] = useState(false);
+  const [bulkLocationForm, setBulkLocationForm] = useState({ sub_county: "", ward: "" });
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects"],
@@ -80,6 +84,34 @@ export default function AdminProjectManager() {
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  const bulkLocationMutation = useMutation({
+    mutationFn: () => bulkUpdateProjectLocation(selectedIds, bulkLocationForm.sub_county, bulkLocationForm.ward),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success("Projects locations updated successfully");
+      setBulkLocationOpen(false);
+      setSelectedIds([]);
+      setBulkLocationForm({ sub_county: "", ward: "" });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filtered.length && filtered.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map((p) => p.id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((i) => i !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
 
   const filtered = projects.filter(
     (p) =>
@@ -159,15 +191,27 @@ export default function AdminProjectManager() {
               <CardTitle>All Projects ({projects.length})</CardTitle>
               <CardDescription>Manage the complete project registry.</CardDescription>
             </div>
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search projects..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              {selectedIds.length > 0 && (
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setBulkLocationOpen(true)}
+                  className="gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Update Location ({selectedIds.length})
+                </Button>
+              )}
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search projects..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -181,6 +225,13 @@ export default function AdminProjectManager() {
               <Table>
                 <TableHeader className="bg-muted/50">
                   <TableRow>
+                    <TableHead className="w-[40px] text-center">
+                      <Checkbox 
+                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                        onCheckedChange={toggleSelectAll}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead>Project Name</TableHead>
                     <TableHead>Sub-County</TableHead>
                     <TableHead>Sector</TableHead>
@@ -193,13 +244,20 @@ export default function AdminProjectManager() {
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
                         No projects found.
                       </TableCell>
                     </TableRow>
                   ) : (
                     filtered.map((project) => (
                       <TableRow key={project.id}>
+                        <TableCell>
+                          <Checkbox 
+                            checked={selectedIds.includes(project.id)}
+                            onCheckedChange={() => toggleSelect(project.id)}
+                            aria-label={`Select ${project.name}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium text-sm">{project.name}</span>
@@ -381,6 +439,51 @@ export default function AdminProjectManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Location Update Dialog */}
+      <Dialog open={bulkLocationOpen} onOpenChange={setBulkLocationOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Bulk Update Location</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              You are updating the location for {selectedIds.length} project{selectedIds.length === 1 ? "" : "s"}.
+            </p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Sub-County *</label>
+                <Select value={bulkLocationForm.sub_county} onValueChange={(v) => setBulkLocationForm({ ...bulkLocationForm, sub_county: v, ward: "" })}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    {SUB_COUNTIES.map((sc) => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Ward *</label>
+                <Select value={bulkLocationForm.ward} onValueChange={(v) => setBulkLocationForm({ ...bulkLocationForm, ward: v })} disabled={!bulkLocationForm.sub_county}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    {getWards(bulkLocationForm.sub_county).map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => setBulkLocationOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={() => bulkLocationMutation.mutate()} 
+              disabled={bulkLocationMutation.isPending || !bulkLocationForm.sub_county || !bulkLocationForm.ward}
+            >
+              {bulkLocationMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Update Location
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* CSV Import */}
       <CsvProjectImport open={csvOpen} onOpenChange={setCsvOpen} />
     </div>

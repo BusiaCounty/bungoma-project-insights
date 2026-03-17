@@ -194,3 +194,11 @@ export async function deleteProject(id: string): Promise<void> {
   const { error } = await supabase.from("projects").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function bulkUpdateProjectLocation(ids: string[], sub_county: string, ward: string): Promise<void> {
+  const { error } = await supabase
+    .from("projects")
+    .update({ sub_county, ward, updated_at: new Date().toISOString() })
+    .in("id", ids);
+  if (error) throw error;
+}
