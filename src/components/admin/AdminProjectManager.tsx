@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Pencil, Trash2, Loader2, Upload, MapPin } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Loader2, Upload, MapPin, Navigation } from "lucide-react";
 import { toast } from "sonner";
 import { fetchProjects, createProject, updateProject, deleteProject, bulkUpdateProjectLocation, SUB_COUNTIES, SECTORS, STATUSES, FINANCIAL_YEARS, getWards } from "@/data/projects";
 import type { Project } from "@/data/projects";
@@ -27,6 +27,8 @@ type ProjectFormData = {
   progress: number;
   projected_cost: number | null;
   actual_spend: number;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 const emptyForm: ProjectFormData = {
@@ -41,6 +43,8 @@ const emptyForm: ProjectFormData = {
   progress: 0,
   projected_cost: null,
   actual_spend: 0,
+  latitude: null,
+  longitude: null,
 };
 
 export default function AdminProjectManager() {
@@ -140,6 +144,8 @@ export default function AdminProjectManager() {
       progress: project.progress,
       projected_cost: project.projected_cost ?? null,
       actual_spend: Number(project.actual_spend ?? 0),
+      latitude: project.latitude ?? null,
+      longitude: project.longitude ?? null,
     });
     setDialogOpen(true);
   };
@@ -261,7 +267,15 @@ export default function AdminProjectManager() {
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium text-sm">{project.name}</span>
-                            <span className="text-xs text-muted-foreground">{project.ward} • {project.fy}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-muted-foreground">{project.ward} • {project.fy}</span>
+                              {project.latitude != null && project.longitude != null && (
+                                <span className="inline-flex items-center gap-0.5 text-[9px] text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded font-mono">
+                                  <Navigation className="w-2.5 h-2.5" />
+                                  GPS
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-sm">{project.sub_county}</TableCell>
@@ -409,6 +423,53 @@ export default function AdminProjectManager() {
                   }
                   placeholder="Amount spent so far"
                 />
+              </div>
+            </div>
+
+            {/* GPS Coordinates */}
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Navigation className="w-4 h-4 text-primary" />
+                <label className="text-sm font-semibold">GPS Coordinates</label>
+                <span className="text-[10px] text-muted-foreground">(Optional)</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Latitude</label>
+                  <Input
+                    type="number"
+                    step="any"
+                    min={-90}
+                    max={90}
+                    placeholder="e.g. 0.4608"
+                    value={form.latitude ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        latitude: e.target.value === "" ? null : Number(e.target.value),
+                      })
+                    }
+                  />
+                  <p className="text-[10px] text-muted-foreground">Range: -90 to 90</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Longitude</label>
+                  <Input
+                    type="number"
+                    step="any"
+                    min={-180}
+                    max={180}
+                    placeholder="e.g. 34.1115"
+                    value={form.longitude ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        longitude: e.target.value === "" ? null : Number(e.target.value),
+                      })
+                    }
+                  />
+                  <p className="text-[10px] text-muted-foreground">Range: -180 to 180</p>
+                </div>
               </div>
             </div>
 

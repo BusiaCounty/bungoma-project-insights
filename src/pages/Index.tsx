@@ -11,6 +11,7 @@ import ProjectsTable from "@/components/dashboard/ProjectsTable";
 import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
 import CommitteeModule from "@/components/dashboard/CommitteeModule";
+import ProjectLocationTab from "@/components/dashboard/ProjectLocationTab";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
 import FinancialSummary from "@/components/dashboard/FinancialSummary";
 import { fetchProjects } from "@/data/projects";
@@ -196,15 +197,7 @@ const Index = () => {
             )}
 
             {activeTab === "location" && (
-              <div className="bg-card rounded-xl border border-border shadow-card p-6 text-center">
-                <h3 className="text-sm font-bold text-foreground mb-2">
-                  Project Locations
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Map integration coming soon. Project locations across Busia
-                  County will be displayed here.
-                </p>
-              </div>
+              <ProjectLocationTab projects={filtered.length ? filtered : projects} />
             )}
 
             {activeTab === "status" && (
