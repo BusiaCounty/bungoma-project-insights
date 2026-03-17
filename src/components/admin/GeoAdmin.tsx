@@ -23,6 +23,8 @@ export default function GeoAdmin() {
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [editSubCounty, setEditSubCounty] = useState("");
   const [editWard, setEditWard] = useState("");
+  const [editLatitude, setEditLatitude] = useState<string>("");
+  const [editLongitude, setEditLongitude] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   const fetchProjects = async () => {
@@ -70,14 +72,56 @@ export default function GeoAdmin() {
     setEditProject(project);
     setEditSubCounty(project.sub_county);
     setEditWard(project.ward);
+    setEditLatitude(
+      project.latitude === null || project.latitude === undefined
+        ? ""
+        : String(project.latitude),
+    );
+    setEditLongitude(
+      project.longitude === null || project.longitude === undefined
+        ? ""
+        : String(project.longitude),
+    );
+  };
+
+  const parseCoordinate = (
+    raw: string,
+  ): { value: number | null; error?: string } => {
+    const trimmed = raw.trim();
+    if (!trimmed) return { value: null };
+    const n = Number(trimmed);
+    if (!Number.isFinite(n)) return { value: null, error: "Must be a valid number" };
+    return { value: n };
   };
 
   const handleSave = async () => {
     if (!editProject || !editSubCounty || !editWard) return;
+    const lat = parseCoordinate(editLatitude);
+    const lon = parseCoordinate(editLongitude);
+
+    if (lat.error || lon.error) {
+      toast.error("Please enter valid latitude/longitude values");
+      return;
+    }
+    if (lat.value !== null && (lat.value < -90 || lat.value > 90)) {
+      toast.error("Latitude must be between -90 and 90");
+      return;
+    }
+    if (lon.value !== null && (lon.value < -180 || lon.value > 180)) {
+      toast.error("Longitude must be between -180 and 180");
+      return;
+    }
+
     setSaving(true);
     const { error } = await supabase
       .from("projects")
-      .update({ sub_county: editSubCounty, ward: editWard, updated_at: new Date().toISOString() })
+      .update({
+        sub_county: editSubCounty,
+        ward: editWard,
+        latitude: lat.value,
+        longitude: lon.value,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", editProject.id);
     setSaving(false);
     if (error) {
@@ -263,6 +307,29 @@ export default function GeoAdmin() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="proj-lat">Latitude</Label>
+                <Input
+                  id="proj-lat"
+                  inputMode="decimal"
+                  placeholder="-90 to 90"
+                  value={editLatitude}
+                  onChange={(e) => setEditLatitude(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="proj-lon">Longitude</Label>
+                <Input
+                  id="proj-lon"
+                  inputMode="decimal"
+                  placeholder="-180 to 180"
+                  value={editLongitude}
+                  onChange={(e) => setEditLongitude(e.target.value)}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>

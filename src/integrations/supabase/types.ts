@@ -252,6 +252,8 @@ export type Database = {
           description: string | null
           fy: string
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           progress: number
           projected_cost: number | null
@@ -268,6 +270,8 @@ export type Database = {
           description?: string | null
           fy: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           progress?: number
           projected_cost?: number | null
@@ -284,6 +288,8 @@ export type Database = {
           description?: string | null
           fy?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           progress?: number
           projected_cost?: number | null

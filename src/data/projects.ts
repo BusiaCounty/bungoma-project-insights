@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
 export type Project = Tables<"projects">;
 export type WhistleblowerReport = TablesInsert<"whistleblower_reports">;
@@ -147,28 +147,25 @@ export async function updateFeedbackStatus(feedbackId: string, status: string) {
 
 export async function fetchFeedbackReplies(feedbackId: string) {
   const { data, error } = await supabase
-    .from("feedback_replies" as any)
+    .from("feedback_replies")
     .select("*")
     .eq("feedback_id", feedbackId)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return (data || []) as any[];
+  return data || [];
 }
 
-export async function submitFeedbackReply(reply: {
-  feedback_id: string;
-  author_name: string;
-  message: string;
-  is_admin: boolean;
-}) {
+export async function submitFeedbackReply(
+  reply: Omit<TablesInsert<"feedback_replies">, "id" | "created_at">,
+) {
   const { error } = await supabase
-    .from("feedback_replies" as any)
+    .from("feedback_replies")
     .insert(reply);
   if (error) throw error;
 }
 
 export async function createProject(
-  project: Omit<Tables<"projects">, "id" | "created_at" | "updated_at">,
+  project: Omit<TablesInsert<"projects">, "id" | "created_at" | "updated_at">,
 ): Promise<Project> {
   const { data, error } = await supabase
     .from("projects")
@@ -181,9 +178,7 @@ export async function createProject(
 
 export async function updateProject(
   id: string,
-  updates: Partial<
-    Omit<Tables<"projects">, "id" | "created_at" | "updated_at">
-  >,
+  updates: Omit<TablesUpdate<"projects">, "id" | "created_at" | "updated_at">,
 ): Promise<Project> {
   const { data, error } = await supabase
     .from("projects")
