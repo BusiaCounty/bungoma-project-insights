@@ -3,7 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Search,
   MapPin,
@@ -17,12 +23,14 @@ import {
 import { SUB_COUNTIES, getWards } from "@/data/projects";
 import type { Project } from "@/data/projects";
 import ProjectLocationMap from "./ProjectLocationMap";
-
+import PaginationControls from "./PaginationControls";
 interface ProjectLocationTabProps {
   projects: Project[];
 }
 
-export default function ProjectLocationTab({ projects }: ProjectLocationTabProps) {
+export default function ProjectLocationTab({
+  projects,
+}: ProjectLocationTabProps) {
   const [search, setSearch] = useState("");
   const [filterSubCounty, setFilterSubCounty] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -38,14 +46,13 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
         p.sub_county.toLowerCase().includes(search.toLowerCase());
       const matchesSubCounty =
         filterSubCounty === "all" || p.sub_county === filterSubCounty;
-      const matchesStatus =
-        filterStatus === "all" || p.status === filterStatus;
+      const matchesStatus = filterStatus === "all" || p.status === filterStatus;
       return matchesSearch && matchesSubCounty && matchesStatus;
     });
   }, [projects, search, filterSubCounty, filterStatus]);
 
   const mappedCount = filtered.filter(
-    (p) => p.latitude != null && p.longitude != null
+    (p) => p.latitude != null && p.longitude != null,
   ).length;
   const unmappedCount = filtered.length - mappedCount;
 
@@ -78,8 +85,12 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
               <MapPin className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{filtered.length}</p>
-              <p className="text-[11px] text-muted-foreground font-medium">Total Projects</p>
+              <p className="text-2xl font-extrabold text-foreground">
+                {filtered.length}
+              </p>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                Total Projects
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -89,8 +100,12 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
               <Navigation className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{mappedCount}</p>
-              <p className="text-[11px] text-muted-foreground font-medium">With GPS</p>
+              <p className="text-2xl font-extrabold text-foreground">
+                {mappedCount}
+              </p>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                With GPS
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -100,8 +115,12 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
               <MapPin className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{unmappedCount}</p>
-              <p className="text-[11px] text-muted-foreground font-medium">No GPS</p>
+              <p className="text-2xl font-extrabold text-foreground">
+                {unmappedCount}
+              </p>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                No GPS
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -111,8 +130,12 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
               <Building2 className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{subCountyStats.length}</p>
-              <p className="text-[11px] text-muted-foreground font-medium">Sub-Counties</p>
+              <p className="text-2xl font-extrabold text-foreground">
+                {subCountyStats.length}
+              </p>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                Sub-Counties
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -136,7 +159,9 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
           <SelectContent>
             <SelectItem value="all">All Sub-Counties</SelectItem>
             {SUB_COUNTIES.map((sc) => (
-              <SelectItem key={sc} value={sc}>{sc}</SelectItem>
+              <SelectItem key={sc} value={sc}>
+                {sc}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -197,15 +222,21 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-xs font-bold text-foreground">{subCounty}</span>
+                        <span className="text-xs font-bold text-foreground">
+                          {subCounty}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Badge variant="secondary" className="text-[10px] py-0">
                           {stats.total}
                         </Badge>
                         {stats.mapped > 0 && (
-                          <Badge variant="outline" className="text-[10px] py-0 text-emerald-600 border-emerald-200 bg-emerald-50">
-                            <Navigation className="w-2.5 h-2.5 mr-0.5" /> {stats.mapped}
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] py-0 text-emerald-600 border-emerald-200 bg-emerald-50"
+                          >
+                            <Navigation className="w-2.5 h-2.5 mr-0.5" />{" "}
+                            {stats.mapped}
                           </Badge>
                         )}
                       </div>
@@ -231,15 +262,24 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
                                   : "text-muted-foreground/40"
                               }`}
                             />
-                            <span className="truncate font-medium text-foreground">{project.name}</span>
-                            <Badge variant="secondary" className={`ml-auto text-[9px] py-0 shrink-0 ${statusColor(project.status)}`}>
+                            <span className="truncate font-medium text-foreground">
+                              {project.name}
+                            </span>
+                            <Badge
+                              variant="secondary"
+                              className={`ml-auto text-[9px] py-0 shrink-0 ${statusColor(project.status)}`}
+                            >
                               {project.status}
                             </Badge>
                           </button>
                         ))}
-                      {filtered.filter((p) => p.sub_county === subCounty).length > 8 && (
+                      {filtered.filter((p) => p.sub_county === subCounty)
+                        .length > 8 && (
                         <p className="text-[10px] text-muted-foreground pl-5 py-1">
-                          +{filtered.filter((p) => p.sub_county === subCounty).length - 8} more
+                          +
+                          {filtered.filter((p) => p.sub_county === subCounty)
+                            .length - 8}{" "}
+                          more
                         </p>
                       )}
                     </div>
@@ -287,35 +327,43 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
                         <span className="text-xs text-muted-foreground">
                           {project.ward}, {project.sub_county}
                         </span>
-                        {project.latitude != null && project.longitude != null && (
-                          <span className="text-[10px] text-emerald-600 font-mono bg-emerald-50 px-1.5 py-0.5 rounded">
-                            {project.latitude.toFixed(4)}°, {project.longitude.toFixed(4)}°
-                          </span>
-                        )}
+                        {project.latitude != null &&
+                          project.longitude != null && (
+                            <span className="text-[10px] text-emerald-600 font-mono bg-emerald-50 px-1.5 py-0.5 rounded">
+                              {project.latitude.toFixed(4)}°,{" "}
+                              {project.longitude.toFixed(4)}°
+                            </span>
+                          )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant="secondary" className={`text-[10px] ${statusColor(project.status)}`}>
+                      <Badge
+                        variant="secondary"
+                        className={`text-[10px] ${statusColor(project.status)}`}
+                      >
                         {project.status}
                       </Badge>
                       <Badge variant="outline" className="text-[10px]">
-                        {project.sector.length > 20 ? project.sector.slice(0, 20) + "…" : project.sector}
+                        {project.sector.length > 20
+                          ? project.sector.slice(0, 20) + "…"
+                          : project.sector}
                       </Badge>
-                      {project.latitude != null && project.longitude != null && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => {
-                            window.open(
-                              `https://www.google.com/maps?q=${project.latitude},${project.longitude}`,
-                              "_blank"
-                            );
-                          }}
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </Button>
-                      )}
+                      {project.latitude != null &&
+                        project.longitude != null && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              window.open(
+                                `https://www.google.com/maps?q=${project.latitude},${project.longitude}`,
+                                "_blank",
+                              );
+                            }}
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                     </div>
                   </div>
                 ))
@@ -336,11 +384,16 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {subCountyStats.map(([name, stats]) => {
-              const pct = stats.total > 0 ? Math.round((stats.mapped / stats.total) * 100) : 0;
+              const pct =
+                stats.total > 0
+                  ? Math.round((stats.mapped / stats.total) * 100)
+                  : 0;
               return (
                 <div key={name} className="space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="font-medium text-foreground truncate">{name}</span>
+                    <span className="font-medium text-foreground truncate">
+                      {name}
+                    </span>
                     <span className="text-muted-foreground font-bold tabular-nums">
                       {stats.mapped}/{stats.total}
                     </span>
@@ -359,7 +412,9 @@ export default function ProjectLocationTab({ projects }: ProjectLocationTabProps
                       }}
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{pct}% mapped</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {pct}% mapped
+                  </p>
                 </div>
               );
             })}
