@@ -19,6 +19,8 @@ type CsvRow = {
   fy: string;
   budget: string;
   progress: string;
+  latitude: string;
+  longitude: string;
 };
 
 type ValidatedRow = CsvRow & {
@@ -27,7 +29,7 @@ type ValidatedRow = CsvRow & {
 };
 
 const REQUIRED_HEADERS = ["name", "sub_county", "ward", "sector", "fy"];
-const ALL_HEADERS = ["name", "description", "sub_county", "ward", "sector", "status", "fy", "budget", "progress"];
+const ALL_HEADERS = ["name", "description", "sub_county", "ward", "sector", "status", "fy", "budget", "progress", "latitude", "longitude"];
 
 type ProjectStatus = (typeof STATUSES)[number];
 
@@ -63,6 +65,8 @@ function validateRow(row: Record<string, string>, index: number): ValidatedRow {
   const budget = row.budget || "0";
   const progress = row.progress || "0";
   const description = row.description || "";
+  const latitude = row.latitude || "";
+  const longitude = row.longitude || "";
 
   if (!name) errors.push("Name is required");
   if (name.length > 200) errors.push("Name too long (max 200)");
@@ -79,8 +83,12 @@ function validateRow(row: Record<string, string>, index: number): ValidatedRow {
   if (isNaN(Number(budget)) || Number(budget) < 0) errors.push("Budget must be a positive number");
   const prog = Number(progress);
   if (isNaN(prog) || prog < 0 || prog > 100) errors.push("Progress must be 0-100");
+  if (latitude && (isNaN(Number(latitude)) || Number(latitude) < -90 || Number(latitude) > 90))
+    errors.push("Latitude must be between -90 and 90");
+  if (longitude && (isNaN(Number(longitude)) || Number(longitude) < -180 || Number(longitude) > 180))
+    errors.push("Longitude must be between -180 and 180");
 
-  return { name, description, sub_county, ward, sector, status, fy, budget, progress, errors, rowIndex: index + 2 };
+  return { name, description, sub_county, ward, sector, status, fy, budget, progress, latitude, longitude, errors, rowIndex: index + 2 };
 }
 
 interface CsvProjectImportProps {
@@ -175,6 +183,8 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
           progress: Number(row.progress) || 0,
           actual_spend: 0,
           projected_cost: null,
+          latitude: row.latitude ? Number(row.latitude) : null,
+          longitude: row.longitude ? Number(row.longitude) : null,
         });
         success++;
       } catch {
@@ -203,7 +213,7 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
 
   const downloadTemplate = () => {
     const header = ALL_HEADERS.join(",");
-    const example = `"Busia Water Supply Phase II","Construction of water supply system","Matayos","Bukhayo West","Health and Sanitation","Ongoing","2024/2025","5000000","35"`;
+    const example = `"Busia Water Supply Phase II","Construction of water supply system","Matayos","Bukhayo West","Health and Sanitation","Ongoing","2024/2025","5000000","35","0.4608","34.1108"`;
     const blob = new Blob([header + "\n" + example], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -264,7 +274,7 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
                   {isDragActive ? "Drop your CSV file here" : "Click or drag-and-drop a CSV file"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Required columns: name, sub_county, ward, sector, fy
+                  Required columns: name, sub_county, ward, sector, fy. Optional: latitude, longitude
                 </p>
                 <input
                   ref={fileRef}
@@ -314,6 +324,8 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
                       <TableHead>Sub-County</TableHead>
                       <TableHead>Ward</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Lat</TableHead>
+                      <TableHead>Lng</TableHead>
                       <TableHead>Validation</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -325,6 +337,8 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
                         <TableCell className="text-sm">{row.sub_county || "—"}</TableCell>
                         <TableCell className="text-sm">{row.ward || "—"}</TableCell>
                         <TableCell className="text-sm">{row.status || "—"}</TableCell>
+                        <TableCell className="text-sm">{row.latitude || "—"}</TableCell>
+                        <TableCell className="text-sm">{row.longitude || "—"}</TableCell>
                         <TableCell>
                           {row.errors.length === 0 ? (
                             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
