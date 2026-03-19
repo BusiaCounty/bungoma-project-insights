@@ -108,12 +108,31 @@ export const getWards = (subCounty?: string) => {
 };
 
 export async function fetchProjects(): Promise<Project[]> {
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  let allData: Project[] = [];
+  let from = 0;
+  const step = 1000;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .range(from, from + step - 1);
+
+    if (error) throw error;
+
+    if (data) {
+      allData = [...allData, ...data];
+      if (data.length < step) {
+        break;
+      }
+      from += step;
+    } else {
+      break;
+    }
+  }
+
+  return allData;
 }
 
 export async function submitWhistleblowerReport(report: WhistleblowerReport) {
