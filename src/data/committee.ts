@@ -33,27 +33,75 @@ export interface CommitteeTask {
 }
 
 export async function fetchCommitteeMembers(projectId?: string): Promise<CommitteeMember[]> {
-  let query = supabase.from("committee_members").select("*").order("created_at", { ascending: false });
-  if (projectId) query = query.eq("project_id", projectId);
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data as CommitteeMember[]) || [];
+  let allData: CommitteeMember[] = [];
+  let from = 0;
+  const step = 1000;
+
+  while (true) {
+    let query = supabase.from("committee_members").select("*").order("created_at", { ascending: false }).range(from, from + step - 1);
+    if (projectId) query = query.eq("project_id", projectId);
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    if (data) {
+      allData = [...allData, ...(data as CommitteeMember[])];
+      if (data.length < step) break;
+      from += step;
+    } else {
+      break;
+    }
+  }
+  
+  return allData;
 }
 
 export async function fetchCommitteeMeetings(projectId?: string): Promise<CommitteeMeeting[]> {
-  let query = supabase.from("committee_meetings").select("*").order("meeting_date", { ascending: false });
-  if (projectId) query = query.eq("project_id", projectId);
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data as CommitteeMeeting[]) || [];
+  let allData: CommitteeMeeting[] = [];
+  let from = 0;
+  const step = 1000;
+
+  while (true) {
+    let query = supabase.from("committee_meetings").select("*").order("meeting_date", { ascending: false }).range(from, from + step - 1);
+    if (projectId) query = query.eq("project_id", projectId);
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    if (data) {
+      allData = [...allData, ...(data as CommitteeMeeting[])];
+      if (data.length < step) break;
+      from += step;
+    } else {
+      break;
+    }
+  }
+  
+  return allData;
 }
 
 export async function fetchCommitteeTasks(projectId?: string): Promise<CommitteeTask[]> {
-  let query = supabase.from("committee_tasks").select("*").order("created_at", { ascending: false });
-  if (projectId) query = query.eq("project_id", projectId);
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data as CommitteeTask[]) || [];
+  let allData: CommitteeTask[] = [];
+  let from = 0;
+  const step = 1000;
+
+  while (true) {
+    let query = supabase.from("committee_tasks").select("*").order("created_at", { ascending: false }).range(from, from + step - 1);
+    if (projectId) query = query.eq("project_id", projectId);
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    if (data) {
+      allData = [...allData, ...(data as CommitteeTask[])];
+      if (data.length < step) break;
+      from += step;
+    } else {
+      break;
+    }
+  }
+  
+  return allData;
 }
 
 export async function createCommitteeMember(member: Omit<CommitteeMember, "id" | "created_at">) {
