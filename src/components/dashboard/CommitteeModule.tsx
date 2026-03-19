@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Users, CalendarDays, ClipboardList, PlusCircle, Trash2,
@@ -193,6 +193,18 @@ function MembersPanel({ members, projects, selectedProjectId, isAdmin, onMutate 
 }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ project_id: "", full_name: "", role: "Member", phone: "", email: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedProjectId]);
+
+  const totalPages = Math.ceil(members.length / ITEMS_PER_PAGE);
+  const paginatedMembers = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return members.slice(start, start + ITEMS_PER_PAGE);
+  }, [members, currentPage]);
 
   const handleAdd = async () => {
     if (!form.project_id || !form.full_name) { toast.error("Project and name are required"); return; }
@@ -248,9 +260,9 @@ function MembersPanel({ members, projects, selectedProjectId, isAdmin, onMutate 
             </tr>
           </thead>
           <tbody>
-            {members.map((m, i) => (
+            {paginatedMembers.map((m, i) => (
               <tr key={m.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                <td className="px-3 py-2 text-muted-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
                 <td className="px-3 py-2 font-medium flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
                     {m.full_name.charAt(0)}
@@ -274,6 +286,13 @@ function MembersPanel({ members, projects, selectedProjectId, isAdmin, onMutate 
           </tbody>
         </table>
       </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between p-3 border-t border-border/50 bg-muted/10">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Previous</button>
+          <span className="text-xs text-muted-foreground font-medium">Page {currentPage} of {totalPages}</span>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Next</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -284,6 +303,18 @@ function MeetingsPanel({ meetings, members, projects, selectedProjectId, isAdmin
 }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ project_id: "", meeting_date: new Date().toISOString().split("T")[0], agenda: "", decisions: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedProjectId]);
+
+  const totalPages = Math.ceil(meetings.length / ITEMS_PER_PAGE);
+  const paginatedMeetings = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return meetings.slice(start, start + ITEMS_PER_PAGE);
+  }, [meetings, currentPage]);
 
   const handleAdd = async () => {
     if (!form.project_id || !form.agenda) { toast.error("Project and agenda are required"); return; }
@@ -329,7 +360,7 @@ function MeetingsPanel({ meetings, members, projects, selectedProjectId, isAdmin
       )}
 
       <div className="divide-y divide-border/50">
-        {meetings.map(m => (
+        {paginatedMeetings.map(m => (
           <div key={m.id} className="p-4 hover:bg-muted/20 transition-colors">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
@@ -351,6 +382,13 @@ function MeetingsPanel({ meetings, members, projects, selectedProjectId, isAdmin
           <div className="text-center py-10 text-xs text-muted-foreground">No meetings recorded.</div>
         )}
       </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between p-3 border-t border-border/50 bg-muted/10">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Previous</button>
+          <span className="text-xs text-muted-foreground font-medium">Page {currentPage} of {totalPages}</span>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Next</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -361,6 +399,18 @@ function TasksPanel({ tasks, members, projects, selectedProjectId, isAdmin, onMu
 }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ project_id: "", assigned_to: "", title: "", description: "", due_date: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedProjectId]);
+
+  const totalPages = Math.ceil(tasks.length / ITEMS_PER_PAGE);
+  const paginatedTasks = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return tasks.slice(start, start + ITEMS_PER_PAGE);
+  }, [tasks, currentPage]);
 
   const handleAdd = async () => {
     if (!form.project_id || !form.title) { toast.error("Project and title are required"); return; }
@@ -432,11 +482,11 @@ function TasksPanel({ tasks, members, projects, selectedProjectId, isAdmin, onMu
             </tr>
           </thead>
           <tbody>
-            {tasks.map((t, i) => {
+            {paginatedTasks.map((t, i) => {
               const assignee = members.find(m => m.id === t.assigned_to);
               return (
                 <tr key={t.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                  <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
                   <td className="px-3 py-2 font-medium max-w-[220px] truncate">{t.title}</td>
                   <td className="px-3 py-2 max-w-[180px] truncate">{projects.find(p => p.id === t.project_id)?.name || "—"}</td>
                   <td className="px-3 py-2">{assignee?.full_name || "Unassigned"}</td>
@@ -472,6 +522,13 @@ function TasksPanel({ tasks, members, projects, selectedProjectId, isAdmin, onMu
           </tbody>
         </table>
       </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between p-3 border-t border-border/50 bg-muted/10">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Previous</button>
+          <span className="text-xs text-muted-foreground font-medium">Page {currentPage} of {totalPages}</span>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Next</button>
+        </div>
+      )}
     </div>
   );
 }
