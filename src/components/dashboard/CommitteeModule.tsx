@@ -143,7 +143,7 @@ function OverviewPanel({ members, meetings, tasks, projects }: {
   members: CommitteeMember[]; meetings: CommitteeMeeting[]; tasks: CommitteeTask[]; projects: Project[];
 }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 50;
 
   const projectsWithCommittees = new Set(members.map(m => m.project_id));
   
