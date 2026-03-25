@@ -5,6 +5,64 @@ export type Project = Tables<"projects">;
 export type WhistleblowerReport = TablesInsert<"whistleblower_reports">;
 export type ProjectFeedback = TablesInsert<"project_feedback">;
 
+// Enhanced whistleblower form interface
+export interface PersonInvolved {
+  name: string;
+  position: string;
+  department: string;
+  relationship: string;
+}
+
+export interface EnhancedWhistleblowerReport {
+  // Section 1: Reporter Information
+  reportType: "Anonymous" | "Identified";
+  fullName: string;
+  contactEmail: string;
+  phoneNumber: string;
+  preferredContactMethod: "Email" | "Phone" | "None";
+  relationshipToOrg: "Employee" | "Contractor" | "Citizen/Public" | "Vendor/Partner" | "Other";
+  relationshipOther: string;
+
+  // Section 2: Incident Details
+  reportTitle: string;
+  misconductType: "Fraud" | "Corruption" | "Abuse of Office" | "Harassment" | "Financial Mismanagement" | "Procurement Irregularities" | "Data Misuse" | "Other";
+  misconductOther: string;
+  incidentDescription: string;
+  incidentDate: string;
+  incidentDateEnd: string;
+  county: string;
+  subCounty: string;
+  ward: string;
+  specificLocation: string;
+
+  // Section 3: Persons Involved
+  personsInvolved: PersonInvolved[];
+
+  // Section 4: Evidence & Documentation
+  evidenceDescription: string;
+  additionalWitnesses: boolean;
+  witnessDetails: string;
+
+  // Section 5: Impact & Risk Assessment
+  estimatedImpact: string[];
+  issueOngoing: boolean;
+  urgencyLevel: "Low" | "Medium" | "High" | "Critical";
+
+  // Section 6: Confidentiality & Consent
+  confidentialityPreference: boolean;
+  consentToContact: boolean;
+  consentStatement: boolean;
+  policyAcknowledgment: boolean;
+
+  // Section 7: Follow-Up
+  receiveUpdates: boolean;
+  trackingCode: string;
+
+  // Legacy fields
+  projectName: string;
+  evidence: string;
+}
+
 export const SUB_COUNTIES = [
   "Matayos",
   "Nambale",
@@ -135,8 +193,18 @@ export async function fetchProjects(): Promise<Project[]> {
   return allData;
 }
 
-export async function submitWhistleblowerReport(report: WhistleblowerReport) {
-  const { error } = await supabase.from("whistleblower_reports").insert(report);
+export async function submitWhistleblowerReport(report: EnhancedWhistleblowerReport) {
+  // For now, map to the existing database schema
+  // Once the migration is run, this can be updated to use the full schema
+  const legacyReport = {
+    // Legacy fields that exist in current schema
+    project_name: report.projectName || `${report.county} - ${report.subCounty || 'Unknown'}`,
+    sub_county: report.subCounty || report.county,
+    description: `${report.reportTitle}\n\n${report.incidentDescription}\n\nType: ${report.misconductType}\nUrgency: ${report.urgencyLevel}\nCounty: ${report.county}\nRelationship to Org: ${report.relationshipToOrg}`,
+    evidence: report.evidenceDescription || report.evidence || null,
+  };
+
+  const { error } = await supabase.from("whistleblower_reports").insert(legacyReport);
   if (error) throw error;
 }
 
