@@ -153,12 +153,16 @@ export async function submitFeedback(feedback: ProjectFeedback) {
 export async function fetchFeedback(projectId?: string) {
   let query = supabase
     .from("project_feedback")
-    .select("*")
+    .select("*, projects(name)")
     .order("created_at", { ascending: false });
   if (projectId) query = query.eq("project_id", projectId);
   const { data, error } = await query;
   if (error) throw error;
-  return data || [];
+  // Flatten: attach project_name from the joined relation
+  return (data || []).map((f: any) => ({
+    ...f,
+    project_name: f.projects?.name || null,
+  }));
 }
 
 export async function updateFeedbackStatus(feedbackId: string, status: string) {

@@ -126,7 +126,8 @@ export default function AdminFeedbackViewer() {
     const matchesSearch =
       f.author_name?.toLowerCase().includes(term) ||
       f.comment?.toLowerCase().includes(term) ||
-      f.tracking_number?.toLowerCase().includes(term);
+      f.tracking_number?.toLowerCase().includes(term) ||
+      f.project_name?.toLowerCase().includes(term);
     const matchesStatus = statusFilter === "all" || f.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -146,9 +147,10 @@ export default function AdminFeedbackViewer() {
 
   // Export CSV
   const exportCSV = () => {
-    const headers = ["Tracking #", "Author", "Comment", "Rating", "Status", "Date"];
+    const headers = ["Tracking #", "Project", "Author", "Comment", "Rating", "Status", "Date"];
     const rows = filtered.map((f: any) => [
       f.tracking_number || "-",
+      `"${(f.project_name || "N/A").replace(/"/g, '""')}"`,
       f.author_name || "Anonymous",
       `"${(f.comment || "").replace(/"/g, '""')}"`,
       f.rating || "",
@@ -173,6 +175,7 @@ export default function AdminFeedbackViewer() {
     const rows = filtered.map((f: any) => `
       <tr>
         <td style="padding:6px;border:1px solid #ddd">${f.tracking_number || "-"}</td>
+        <td style="padding:6px;border:1px solid #ddd">${f.project_name || "N/A"}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.author_name || "Anonymous"}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.comment}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.rating ? "★".repeat(f.rating) : "-"}</td>
@@ -188,6 +191,7 @@ export default function AdminFeedbackViewer() {
         <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:12px">
           <thead><tr style="background:#f5f5f5">
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Tracking #</th>
+            <th style="padding:6px;border:1px solid #ddd;text-align:left">Project</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Author</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Comment</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Rating</th>
@@ -303,6 +307,7 @@ export default function AdminFeedbackViewer() {
                   <TableHeader className="bg-muted/50">
                     <TableRow>
                       <TableHead>Tracking #</TableHead>
+                      <TableHead>Project</TableHead>
                       <TableHead>Author</TableHead>
                       <TableHead>Comment</TableHead>
                       <TableHead>Rating</TableHead>
@@ -314,7 +319,7 @@ export default function AdminFeedbackViewer() {
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
                           No feedback found.
                         </TableCell>
                       </TableRow>
@@ -327,6 +332,9 @@ export default function AdminFeedbackViewer() {
                         >
                           <TableCell className="font-mono text-xs font-semibold text-primary">
                             {item.tracking_number || "-"}
+                          </TableCell>
+                          <TableCell className="text-sm max-w-[180px]">
+                            <p className="line-clamp-1 font-medium">{item.project_name || <span className="text-muted-foreground italic">N/A</span>}</p>
                           </TableCell>
                           <TableCell className="font-medium text-sm">{item.author_name || "Anonymous"}</TableCell>
                           <TableCell className="text-sm max-w-[250px]">
@@ -397,6 +405,11 @@ export default function AdminFeedbackViewer() {
                     {selectedFeedback.tracking_number && (
                       <p className="text-xs font-mono text-primary mt-0.5">
                         {selectedFeedback.tracking_number}
+                      </p>
+                    )}
+                    {selectedFeedback.project_name && (
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Project: <span className="font-medium text-foreground">{selectedFeedback.project_name}</span>
                       </p>
                     )}
                   </div>
