@@ -142,14 +142,23 @@ const CommitteeModule = ({ projects, isAdmin = false }: Props) => {
 function OverviewPanel({ members, meetings, tasks, projects }: {
   members: CommitteeMember[]; meetings: CommitteeMeeting[]; tasks: CommitteeTask[]; projects: Project[];
 }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
+
+  const projectsWithCommittees = new Set(members.map(m => m.project_id));
+  
+  const totalPages = Math.ceil(projects.length / ITEMS_PER_PAGE);
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return projects.slice(start, start + ITEMS_PER_PAGE);
+  }, [projects, currentPage]);
+
   const stats = [
     { label: "Total Members", value: members.length, icon: Users, color: "text-primary" },
     { label: "Meetings Held", value: meetings.length, icon: CalendarDays, color: "text-secondary" },
     { label: "Tasks Assigned", value: tasks.length, icon: ClipboardList, color: "text-accent-foreground" },
     { label: "Tasks Completed", value: tasks.filter(t => t.status === "Done").length, icon: CheckCircle2, color: "text-success" },
   ];
-
-  const projectsWithCommittees = new Set(members.map(m => m.project_id));
 
   return (
     <div className="flex flex-col gap-4">
@@ -170,7 +179,7 @@ function OverviewPanel({ members, meetings, tasks, projects }: {
       <div className="bg-card rounded-xl border border-border shadow-card p-4">
         <h3 className="text-xs font-bold text-foreground mb-3">Projects with Committees ({projectsWithCommittees.size}/{projects.length})</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          {projects.map(p => {
+          {paginatedProjects.map(p => {
             const has = projectsWithCommittees.has(p.id);
             const count = members.filter(m => m.project_id === p.id).length;
             return (
@@ -182,6 +191,13 @@ function OverviewPanel({ members, meetings, tasks, projects }: {
             );
           })}
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+            <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Previous</button>
+            <span className="text-xs text-muted-foreground font-medium">Page {currentPage} of {totalPages}</span>
+            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 text-xs font-semibold bg-background border border-border rounded-lg disabled:opacity-50 hover:bg-muted transition-colors">Next</button>
+          </div>
+        )}
       </div>
     </div>
   );
