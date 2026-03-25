@@ -12,9 +12,9 @@ const COUNTIES = [
   "Laikipia", "Nakuru", "Narok", "Kajiado", "Bomet", "Kericho", "Kakamega", "Vihiga", "Bungoma", "Busia"
 ];
 
-const BUNGOMA_SUB_COUNTIES = [
-  "Bungoma Central", "Bungoma North", "Bungoma South", "Bungoma West", "Bungoma East",
-  "Cheptais", "Kanduyi", "Kimilili", "Mt. Elgon", "Sirisia", "Tongaren", "Webuye East", "Webuye West"
+const BUSIA_SUB_COUNTIES = [
+  "Bunyala", "Butula", "Matayos", "Samia", "Nambale",
+  "Teso North", "Teso South"
 ];
 
 const IMPACT_OPTIONS = [
@@ -39,7 +39,7 @@ const WhistleblowerForm = () => {
     incidentDescription: "",
     incidentDate: "",
     incidentDateEnd: "",
-    county: "Bungoma",
+    county: "Busia",
     subCounty: "",
     ward: "",
     specificLocation: "",
