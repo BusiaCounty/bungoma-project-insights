@@ -508,7 +508,7 @@ const WhistleblowerForm = () => {
                     className={inputClass}
                   >
                     <option value="">Select Sub-County</option>
-                    {BUNGOMA_SUB_COUNTIES.map(subCounty => (
+                    {BUSIA_SUB_COUNTIES.map(subCounty => (
                       <option key={subCounty} value={subCounty}>{subCounty}</option>
                     ))}
                   </select>
