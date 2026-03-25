@@ -122,9 +122,11 @@ export default function AdminFeedbackViewer() {
   });
 
   const filtered = feedback.filter((f: any) => {
+    const term = searchTerm.toLowerCase();
     const matchesSearch =
-      f.author_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      f.comment?.toLowerCase().includes(searchTerm.toLowerCase());
+      f.author_name?.toLowerCase().includes(term) ||
+      f.comment?.toLowerCase().includes(term) ||
+      f.tracking_number?.toLowerCase().includes(term);
     const matchesStatus = statusFilter === "all" || f.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -144,8 +146,9 @@ export default function AdminFeedbackViewer() {
 
   // Export CSV
   const exportCSV = () => {
-    const headers = ["Author", "Comment", "Rating", "Status", "Date"];
+    const headers = ["Tracking #", "Author", "Comment", "Rating", "Status", "Date"];
     const rows = filtered.map((f: any) => [
+      f.tracking_number || "-",
       f.author_name || "Anonymous",
       `"${(f.comment || "").replace(/"/g, '""')}"`,
       f.rating || "",
@@ -169,6 +172,7 @@ export default function AdminFeedbackViewer() {
     if (!printWindow) return;
     const rows = filtered.map((f: any) => `
       <tr>
+        <td style="padding:6px;border:1px solid #ddd">${f.tracking_number || "-"}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.author_name || "Anonymous"}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.comment}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.rating ? "★".repeat(f.rating) : "-"}</td>
@@ -183,6 +187,7 @@ export default function AdminFeedbackViewer() {
         <p style="color:#666;font-size:12px">Generated: ${new Date().toLocaleString("en-KE")} · Total: ${filtered.length} entries</p>
         <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:12px">
           <thead><tr style="background:#f5f5f5">
+            <th style="padding:6px;border:1px solid #ddd;text-align:left">Tracking #</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Author</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Comment</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Rating</th>
@@ -297,6 +302,7 @@ export default function AdminFeedbackViewer() {
                 <Table>
                   <TableHeader className="bg-muted/50">
                     <TableRow>
+                      <TableHead>Tracking #</TableHead>
                       <TableHead>Author</TableHead>
                       <TableHead>Comment</TableHead>
                       <TableHead>Rating</TableHead>
@@ -308,7 +314,7 @@ export default function AdminFeedbackViewer() {
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                           No feedback found.
                         </TableCell>
                       </TableRow>
@@ -319,6 +325,9 @@ export default function AdminFeedbackViewer() {
                           className="cursor-pointer hover:bg-muted/30"
                           onClick={() => setSelectedFeedback(item)}
                         >
+                          <TableCell className="font-mono text-xs font-semibold text-primary">
+                            {item.tracking_number || "-"}
+                          </TableCell>
                           <TableCell className="font-medium text-sm">{item.author_name || "Anonymous"}</TableCell>
                           <TableCell className="text-sm max-w-[250px]">
                             <p className="line-clamp-2">{item.comment}</p>
@@ -383,7 +392,14 @@ export default function AdminFeedbackViewer() {
               {/* Original feedback */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-2">
                 <div className="flex justify-between items-start">
-                  <span className="text-sm font-semibold text-foreground">{selectedFeedback.author_name || "Anonymous"}</span>
+                  <div>
+                    <span className="text-sm font-semibold text-foreground">{selectedFeedback.author_name || "Anonymous"}</span>
+                    {selectedFeedback.tracking_number && (
+                      <p className="text-xs font-mono text-primary mt-0.5">
+                        {selectedFeedback.tracking_number}
+                      </p>
+                    )}
+                  </div>
                   <span className="text-xs text-muted-foreground">
                     {new Date(selectedFeedback.created_at).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
                   </span>

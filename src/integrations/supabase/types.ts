@@ -215,6 +215,7 @@ export type Database = {
           project_id: string | null
           rating: number | null
           status: string
+          tracking_number: string | null
         }
         Insert: {
           author_name?: string
@@ -224,6 +225,7 @@ export type Database = {
           project_id?: string | null
           rating?: number | null
           status?: string
+          tracking_number?: string | null
         }
         Update: {
           author_name?: string
@@ -233,6 +235,7 @@ export type Database = {
           project_id?: string | null
           rating?: number | null
           status?: string
+          tracking_number?: string | null
         }
         Relationships: [
           {

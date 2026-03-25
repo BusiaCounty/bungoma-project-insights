@@ -7,8 +7,11 @@ import {
   UserCircle2,
   ChevronDown,
   ChevronUp,
+  Copy,
+  CheckCheck,
+  ShieldCheck,
 } from "lucide-react";
-import { fetchFeedback, submitFeedback } from "@/data/projects";
+import { fetchFeedback, submitFeedback, fetchFeedbackReplies } from "@/data/projects";
 import type { Project } from "@/data/projects";
 import StarRating from "./StarRating";
 
@@ -22,7 +25,8 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(0);
-  const [successMsg, setSuccessMsg] = useState(false);
+  const [submittedTracking, setSubmittedTracking] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { data: feedbackList = [], isLoading: feedbackLoading } = useQuery({
     queryKey: ["feedback", project.id],
@@ -37,14 +41,13 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
         comment: comment.trim(),
         rating: rating || null,
       }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["feedback", project.id] });
       setName("");
       setComment("");
       setRating(0);
       setShowForm(false);
-      setSuccessMsg(true);
-      setTimeout(() => setSuccessMsg(false), 4000);
+      setSubmittedTracking(data?.tracking_number || null);
     },
   });
 
@@ -60,6 +63,12 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
     e.preventDefault();
     if (!comment.trim()) return;
     submit();
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   return (
@@ -82,7 +91,7 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
 
         <button
           type="button"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => { setShowForm((v) => !v); setSubmittedTracking(null); }}
           className="flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           <MessageSquarePlus className="w-3.5 h-3.5" />
@@ -95,10 +104,42 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
         </button>
       </div>
 
-      {/* Success toast */}
-      {successMsg && (
-        <div className="text-xs text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2 font-medium">
-          ✓ Thank you! Your feedback has been submitted.
+      {/* Tracking number success toast */}
+      {submittedTracking && (
+        <div
+          className="bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-4 py-3 space-y-2"
+          style={{ animation: "fade-slide-in 0.2s ease" }}
+        >
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+              Feedback Submitted Successfully!
+            </p>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Your tracking number is:
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="bg-background border border-border px-3 py-1.5 rounded-lg text-sm font-mono font-bold text-foreground tracking-wider select-all">
+              {submittedTracking}
+            </code>
+            <button
+              type="button"
+              onClick={() => handleCopy(submittedTracking)}
+              className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors px-2 py-1 rounded-md bg-primary/5 hover:bg-primary/10"
+              title="Copy tracking number"
+            >
+              {copied ? (
+                <><CheckCheck className="w-3 h-3" /> Copied!</>
+              ) : (
+                <><Copy className="w-3 h-3" /> Copy</>
+              )}
+            </button>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Save this number to track your feedback status and see admin replies.
+            Use the <strong>"Track Feedback"</strong> section at the top of this tab.
+          </p>
         </div>
       )}
 
@@ -186,34 +227,7 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
       ) : feedbackList.length > 0 ? (
         <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
           {feedbackList.map((f) => (
-            <div
-              key={f.id}
-              className="flex gap-2 p-2.5 rounded-lg bg-muted/20 border border-border/50"
-            >
-              <UserCircle2 className="w-6 h-6 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className="text-[11px] font-semibold text-foreground truncate">
-                    {f.author_name || "Anonymous"}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {f.rating && (
-                      <StarRating value={f.rating} readOnly size="sm" />
-                    )}
-                    <span className="text-[9px] text-muted-foreground whitespace-nowrap">
-                      {new Date(f.created_at).toLocaleDateString("en-KE", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 break-words leading-relaxed">
-                  {f.comment}
-                </p>
-              </div>
-            </div>
+            <FeedbackItem key={f.id} feedback={f} />
           ))}
         </div>
       ) : (
@@ -231,5 +245,81 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
     </div>
   );
 };
+
+/* Individual feedback item showing admin replies inline */
+function FeedbackItem({ feedback: f }: { feedback: any }) {
+  const [showReplies, setShowReplies] = useState(false);
+
+  const { data: replies = [], isLoading } = useQuery({
+    queryKey: ["feedback-replies", f.id],
+    queryFn: () => fetchFeedbackReplies(f.id),
+    enabled: showReplies,
+  });
+
+  const adminReplies = replies.filter((r: any) => r.is_admin);
+
+  return (
+    <div className="rounded-lg bg-muted/20 border border-border/50 overflow-hidden">
+      <div className="flex gap-2 p-2.5">
+        <UserCircle2 className="w-6 h-6 text-muted-foreground shrink-0 mt-0.5" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-[11px] font-semibold text-foreground truncate">
+              {f.author_name || "Anonymous"}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {f.rating && (
+                <StarRating value={f.rating} readOnly size="sm" />
+              )}
+              <span className="text-[9px] text-muted-foreground whitespace-nowrap">
+                {new Date(f.created_at).toLocaleDateString("en-KE", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-0.5 break-words leading-relaxed">
+            {f.comment}
+          </p>
+          {/* Show replies toggle */}
+          <button
+            type="button"
+            onClick={() => setShowReplies((v) => !v)}
+            className="text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors mt-1 flex items-center gap-1"
+          >
+            {showReplies ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            {showReplies ? "Hide replies" : "View replies"}
+          </button>
+        </div>
+      </div>
+
+      {showReplies && (
+        <div className="bg-muted/10 border-t border-border/40 px-3 py-2 space-y-1.5" style={{ animation: "fade-slide-in 0.15s ease" }}>
+          {isLoading ? (
+            <Loader2 className="w-3 h-3 animate-spin text-muted-foreground mx-auto" />
+          ) : adminReplies.length > 0 ? (
+            adminReplies.map((r: any) => (
+              <div key={r.id} className="bg-primary/5 border border-primary/15 rounded-lg px-3 py-2 ml-3">
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-[10px] font-bold text-primary flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" /> Admin Reply
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">
+                    {new Date(r.created_at).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </div>
+                <p className="text-[11px] text-foreground leading-relaxed">{r.message}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-[10px] text-muted-foreground italic py-1">No admin replies yet.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default ProjectFeedbackPanel;

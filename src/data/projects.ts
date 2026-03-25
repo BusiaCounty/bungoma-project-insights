@@ -141,8 +141,13 @@ export async function submitWhistleblowerReport(report: WhistleblowerReport) {
 }
 
 export async function submitFeedback(feedback: ProjectFeedback) {
-  const { error } = await supabase.from("project_feedback").insert(feedback);
+  const { data, error } = await supabase
+    .from("project_feedback")
+    .insert(feedback)
+    .select()
+    .single();
   if (error) throw error;
+  return data;
 }
 
 export async function fetchFeedback(projectId?: string) {
@@ -181,6 +186,16 @@ export async function submitFeedbackReply(
     .from("feedback_replies")
     .insert(reply);
   if (error) throw error;
+}
+
+export async function lookupFeedbackByTracking(trackingNumber: string) {
+  const { data, error } = await supabase
+    .from("project_feedback")
+    .select("*")
+    .eq("tracking_number", trackingNumber.trim().toUpperCase())
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }
 
 export async function createProject(
