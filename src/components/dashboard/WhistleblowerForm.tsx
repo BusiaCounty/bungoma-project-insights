@@ -163,7 +163,9 @@ const WhistleblowerForm = () => {
     try {
       const trackingCode = generateTrackingCode();
       
-      // Submit the report (you'll need to update this function)
+      console.log("Submitting report with data:", { ...form, trackingCode });
+      
+      // Submit the report
       await submitWhistleblowerReport({
         ...form,
         trackingCode,
@@ -207,8 +209,9 @@ const WhistleblowerForm = () => {
         projectName: "",
         evidence: "",
       });
-    } catch {
-      toast.error("Failed to submit report. Please try again.");
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      toast.error(`Failed to submit report: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setSubmitting(false);
     }
