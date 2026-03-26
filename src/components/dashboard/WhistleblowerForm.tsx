@@ -141,6 +141,9 @@ const WhistleblowerForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("=== FORM SUBMISSION STARTED ===");
+    console.log("Form data:", form);
+    
     // Validation
     if (!form.reportTitle.trim()) {
       toast.error("Please provide a report title");
@@ -159,10 +162,13 @@ const WhistleblowerForm = () => {
       return;
     }
 
+    console.log("Validation passed, proceeding with submission...");
+
     setSubmitting(true);
     try {
       const trackingCode = generateTrackingCode();
       
+      console.log("Generated tracking code:", trackingCode);
       console.log("Submitting report with data:", { ...form, trackingCode });
       
       // Submit the report

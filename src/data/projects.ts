@@ -222,9 +222,26 @@ export async function submitWhistleblowerReport(report: EnhancedWhistleblowerRep
     };
 
     console.log("Submitting basic report:", basicReport);
+    console.log("Supabase URL:", SUPABASE_URL);
+    console.log("Supabase Key exists:", !!SUPABASE_PUBLISHABLE_KEY);
 
-    // Try to insert with the current schema
+    // Try to insert with current schema
+    console.log("Attempting to insert into whistleblower_reports table...");
+    
+    // First, let's test if we can read from the table
+    const { data: testData, error: testError } = await supabase
+      .from("whistleblower_reports")
+      .select("*")
+      .limit(1);
+    
+    console.log("Table test - data:", testData);
+    console.log("Table test - error:", testError);
+    
+    // Now try the insert
     const { data, error } = await supabase.from("whistleblower_reports").insert(basicReport).select().single();
+    
+    console.log("Supabase response data:", data);
+    console.log("Supabase response error:", error);
     
     if (error) {
       console.error("Supabase error:", error);
