@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -27,6 +27,30 @@ const statusIcons: Record<string, L.Icon> = {
   Completed: createColorIcon("green"),
   Ongoing: createColorIcon("blue"),
   Stalled: createColorIcon("red"),
+};
+
+// Map tile layer options for different detail levels
+const mapLayers = {
+  standard: {
+    name: "Standard",
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+  satellite: {
+    name: "Satellite",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution: '&copy; <a href="https://www.esri.com/">Esri</a> &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP',
+  },
+  terrain: {
+    name: "Terrain",
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+  },
+  detailed: {
+    name: "Detailed",
+    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  },
 };
 
 // Child component to fit map bounds to markers
@@ -84,6 +108,8 @@ export default function ProjectLocationMap({
   highlightedId,
   className = "",
 }: ProjectLocationMapProps) {
+  const [selectedLayer, setSelectedLayer] = useState<keyof typeof mapLayers>("detailed");
+  
   // Only show projects with valid coordinates
   const mappableProjects = projects.filter(
     (p) => p.latitude != null && p.longitude != null
@@ -101,8 +127,33 @@ export default function ProjectLocationMap({
 
   return (
     <div className={`relative rounded-xl overflow-hidden border border-border shadow-sm ${className}`}>
+      {/* Map layer selector */}
+      <div className="absolute top-3 left-3 z-[1000] bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-lg">
+        <select
+          value={selectedLayer}
+          onChange={(e) => setSelectedLayer(e.target.value as keyof typeof mapLayers)}
+          className="px-3 py-2 text-xs font-medium bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer"
+        >
+          {Object.entries(mapLayers).map(([key, layer]) => (
+            <option key={key} value={key} className="bg-card text-foreground">
+              {layer.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Project count badge */}
+      <div className="absolute top-3 right-3 z-[1000] bg-card/95 backdrop-blur-md border border-border rounded-lg px-3 py-2 shadow-lg">
+        <p className="text-[11px] font-bold text-foreground">
+          {mappableProjects.length}{" "}
+          <span className="text-muted-foreground font-normal">
+            of {projects.length} projects mapped
+          </span>
+        </p>
+      </div>
+
       {/* Map legend */}
-      <div className="absolute top-3 right-3 z-[1000] bg-card/95 backdrop-blur-md border border-border rounded-lg px-3 py-2.5 shadow-lg">
+      <div className="absolute bottom-3 right-3 z-[1000] bg-card/95 backdrop-blur-md border border-border rounded-lg px-3 py-2.5 shadow-lg">
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Legend</p>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5">
@@ -120,26 +171,18 @@ export default function ProjectLocationMap({
         </div>
       </div>
 
-      {/* Project count badge */}
-      <div className="absolute top-3 left-3 z-[1000] bg-card/95 backdrop-blur-md border border-border rounded-lg px-3 py-2 shadow-lg">
-        <p className="text-[11px] font-bold text-foreground">
-          {mappableProjects.length}{" "}
-          <span className="text-muted-foreground font-normal">
-            of {projects.length} projects mapped
-          </span>
-        </p>
-      </div>
-
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
-        scrollWheelZoom
+        scrollWheelZoom={true}
         className="w-full h-full min-h-[500px]"
-        style={{ background: "#1a1a2e" }}
+        style={{ background: "#f8f9fa" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution={mapLayers[selectedLayer].attribution}
+          url={mapLayers[selectedLayer].url}
+          maxZoom={19}
+          minZoom={3}
         />
 
         <FitBounds projects={projects} />

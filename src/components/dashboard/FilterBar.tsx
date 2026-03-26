@@ -16,7 +16,10 @@ interface FilterBarProps {
 }
 
 const selectClass =
-  "h-9 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-w-[150px]";
+  "h-9 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-w-[120px] max-w-[200px] sm:min-w-[150px] sm:max-w-none truncate";
+
+const sectorSelectClass =
+  "h-9 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-w-[120px] max-w-[180px] sm:min-w-[150px] sm:max-w-none lg:max-w-[250px] xl:max-w-none truncate";
 
 const FilterBar = ({ filters, onChange, onReset }: FilterBarProps) => {
   const wards = getWards(filters.subCounty === "all" ? undefined : filters.subCounty);
@@ -52,7 +55,7 @@ const FilterBar = ({ filters, onChange, onReset }: FilterBarProps) => {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-semibold text-muted-foreground">Sector</label>
-          <select className={selectClass} value={filters.sector} onChange={(e) => set("sector", e.target.value)}>
+          <select className={sectorSelectClass} value={filters.sector} onChange={(e) => set("sector", e.target.value)}>
             <option value="all">All Sectors</option>
             {SECTORS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>

@@ -156,7 +156,7 @@ export default function ProjectLocationTab({
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="All Sub-Counties" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[2000]">
             <SelectItem value="all">All Sub-Counties</SelectItem>
             {SUB_COUNTIES.map((sc) => (
               <SelectItem key={sc} value={sc}>
@@ -169,7 +169,7 @@ export default function ProjectLocationTab({
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[2000]">
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="Completed">Completed</SelectItem>
             <SelectItem value="Ongoing">Ongoing</SelectItem>
@@ -203,7 +203,7 @@ export default function ProjectLocationTab({
           <ProjectLocationMap
             projects={filtered}
             highlightedId={highlightedId}
-            onProjectClick={(p) => setHighlightedId(p.id)}
+            onProjectClick={(p) => setHighlightedId(prev => prev === p.id ? null : p.id)}
             className="h-[550px]"
           />
 
@@ -248,7 +248,7 @@ export default function ProjectLocationTab({
                         .map((project) => (
                           <button
                             key={project.id}
-                            onClick={() => setHighlightedId(project.id)}
+                            onClick={() => setHighlightedId(prev => prev === project.id ? null : project.id)}
                             className={`w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-md transition-all text-[11px] group ${
                               highlightedId === project.id
                                 ? "bg-primary/10 border border-primary/20"
