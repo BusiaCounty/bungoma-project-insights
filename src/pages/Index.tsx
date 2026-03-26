@@ -7,6 +7,7 @@ import DashboardSidebar, {
 import FilterBar, { type Filters } from "@/components/dashboard/FilterBar";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import Charts from "@/components/dashboard/Charts";
+import SubCountyPieChart from "@/components/dashboard/SubCountyPieChart";
 import ProjectsTable from "@/components/dashboard/ProjectsTable";
 import StatusFeedback from "@/components/dashboard/StatusFeedback";
 import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
@@ -182,6 +183,7 @@ const Index = () => {
                 />
                 <SummaryCards projects={filtered} />
                 <Charts projects={filtered} />
+                <SubCountyPieChart projects={filtered} />
               </div>
             )}
 
