@@ -218,7 +218,7 @@ const Index = () => {
                   onChange={setFilters}
                   onReset={() => setFilters(defaultFilters)}
                 />
-                <FinancialSummary projects={filtered} />
+                <FinancialSummary projects={filtered} isAdmin={isAdmin} />
               </div>
             )}
 
