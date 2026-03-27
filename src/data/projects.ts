@@ -350,6 +350,16 @@ export async function lookupFeedbackByTracking(trackingNumber: string) {
   return data;
 }
 
+export async function lookupWhistleblowerByTracking(trackingNumber: string) {
+  // @ts-ignore - RPC is not typed until gen types is run
+  const { data, error } = await supabase.rpc("get_whistleblower_report_by_tracking", { 
+    p_tracking_code: trackingNumber.trim().toUpperCase() 
+  });
+  
+  if (error) throw error;
+  return Array.isArray(data) && data.length > 0 ? data[0] : null;
+}
+
 export async function createProject(
   project: Omit<TablesInsert<"projects">, "id" | "created_at" | "updated_at">,
 ): Promise<Project> {

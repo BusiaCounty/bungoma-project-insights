@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { ShieldAlert, Send, Upload, User, Mail, Phone, MapPin, Calendar, AlertTriangle, Users, FileText, CheckCircle, Eye, EyeOff, Copy, ChevronDown, ChevronUp } from "lucide-react";
+import { ShieldAlert, Send, Upload, User, Mail, Phone, MapPin, Calendar, AlertTriangle, Users, FileText, CheckCircle, Eye, EyeOff, Copy, ChevronDown, ChevronUp, Search, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
-import { EnhancedWhistleblowerReport, PersonInvolved, submitWhistleblowerReport } from "@/data/projects";
+import { EnhancedWhistleblowerReport, PersonInvolved, submitWhistleblowerReport, lookupWhistleblowerByTracking } from "@/data/projects";
 
 const COUNTIES = [
   "Bungoma", "Busia", "Kakamega", "Kisumu", "Migori", "Nairobi", "Mombasa", "Kilifi", "Kwale",
@@ -76,6 +76,11 @@ const WhistleblowerForm = () => {
   const [expandedSections, setExpandedSections] = useState<string[]>(["1", "2"]);
   const [trackingCode, setTrackingCode] = useState<string | null>(null);
 
+  const [viewMode, setViewMode] = useState<"submit" | "track">("submit");
+  const [searchCode, setSearchCode] = useState("");
+  const [searchResult, setSearchResult] = useState<Record<string, any> | null>(null);
+  const [searching, setSearching] = useState(false);
+
   const inputClass = "w-full h-9 rounded-lg border border-border bg-card px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
   const textareaClass = "w-full rounded-lg border border-border bg-card px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px] resize-y";
 
@@ -136,6 +141,30 @@ const WhistleblowerForm = () => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Tracking code copied to clipboard");
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchCode.trim()) {
+      toast.error("Please enter a tracking code");
+      return;
+    }
+    setSearching(true);
+    setSearchResult(null);
+    try {
+      const data = await lookupWhistleblowerByTracking(searchCode);
+      if (data) {
+        setSearchResult(data);
+        toast.success("Report found successfully.");
+      } else {
+        toast.error("No report found with this code. Please check and try again.");
+      }
+    } catch (error) {
+      console.error("Error finding report:", error);
+      toast.error("Failed to find report details.");
+    } finally {
+      setSearching(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -263,18 +292,40 @@ const WhistleblowerForm = () => {
     <div className="bg-card rounded-xl border border-border shadow-card max-w-4xl mx-auto">
       {/* Header */}
       <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-            <ShieldAlert className="w-6 h-6 text-destructive" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+              <ShieldAlert className="w-6 h-6 text-destructive" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">Enhanced Whistleblower Report</h3>
+              <p className="text-xs text-muted-foreground">All reports are confidential, anonymous, and encrypted</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-foreground">Enhanced Whistleblower Report</h3>
-            <p className="text-xs text-muted-foreground">All reports are confidential, anonymous, and encrypted</p>
+          
+          <div className="flex items-center p-1 bg-muted rounded-lg self-start sm:self-auto">
+            <button
+              onClick={() => setViewMode("submit")}
+              className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
+                viewMode === "submit" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+              }`}
+            >
+              Submit Report
+            </button>
+            <button
+              onClick={() => setViewMode("track")}
+              className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
+                viewMode === "track" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+              }`}
+            >
+              Track Status
+            </button>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      {viewMode === "submit" ? (
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
         {/* Section 1: Reporter Information */}
         <div className="border border-border rounded-lg overflow-hidden">
           <button
@@ -884,6 +935,77 @@ const WhistleblowerForm = () => {
           </button>
         </div>
       </form>
+      ) : (
+        <div className="p-6 space-y-8 min-h-[400px]">
+          <div className="max-w-xl mx-auto text-center space-y-4">
+            <h3 className="text-lg font-bold text-foreground">Track Your Report</h3>
+            <p className="text-sm text-muted-foreground">
+              Enter the secure Tracking Code (WB-XXXX) provided after submitting your report to see updates.
+            </p>
+            
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="WB-XXXXXXXX"
+                  className="w-full pl-10 pr-4 h-10 rounded-lg border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary uppercase"
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={searching}
+                className="h-10 px-6 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {searching ? "Searching..." : "Search"}
+              </button>
+            </form>
+          </div>
+
+          {searchResult && (
+            <div className="max-w-2xl mx-auto bg-card border border-border shadow-sm rounded-xl mt-8">
+              <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4 bg-muted/40 rounded-t-xl">
+                <div>
+                  <h4 className="font-bold text-foreground">{searchResult.report_title}</h4>
+                  <p className="text-xs font-mono text-muted-foreground mt-1">ID: {searchResult.id}</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                    !searchResult.status || searchResult.status === "New" ? "bg-blue-100 text-blue-700 border-blue-200" :
+                    searchResult.status === "Investigating" ? "bg-amber-100 text-amber-700 border-amber-200" :
+                    "bg-green-100 text-green-700 border-green-200"
+                  } border`}>
+                    {searchResult.status || "New"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div>
+                  <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Issue Description</h5>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{searchResult.incident_description || "Not provided"}</p>
+                </div>
+
+                <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-primary" />
+                    <h5 className="text-sm font-bold text-foreground">Official Admin Reply</h5>
+                  </div>
+                  <div className="p-4">
+                    {searchResult.admin_reply ? (
+                      <p className="text-sm text-foreground whitespace-pre-wrap">{searchResult.admin_reply}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No official reply has been provided yet. The issue is currently being monitored.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
