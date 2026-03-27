@@ -263,19 +263,12 @@ export async function submitWhistleblowerReport(report: EnhancedWhistleblowerRep
     // Try to insert with updated schema
     console.log("Attempting to insert into whistleblower_reports table...");
     
-    // First, let's test if we can read from the table
-    const { data: testData, error: testError } = await supabase
-      .from("whistleblower_reports")
-      .select("*")
-      .limit(1);
-    
-    console.log("Table test - data:", testData);
-    console.log("Table test - error:", testError);
-    
     // Now try the insert - using 'any' to bypass stale typescript types
-    const { data, error } = await supabase.from("whistleblower_reports").insert(fullReport as any).select().single();
+    // Note: We do NOT chain .select() here because public users have INSERT access
+    // but not SELECT access due to RLS policies. Selecting immediately after insert
+    // would throw a "permission denied" error.
+    const { error } = await supabase.from("whistleblower_reports").insert(fullReport as any);
     
-    console.log("Supabase response data:", data);
     console.log("Supabase response error:", error);
     
     if (error) {
@@ -284,8 +277,10 @@ export async function submitWhistleblowerReport(report: EnhancedWhistleblowerRep
       throw new Error(`Database error: ${error.message}`);
     }
     
-    console.log("Successfully submitted report:", data);
-    return data;
+    console.log("Successfully submitted report");
+    // We do not return data from the db since we cannot select it. 
+    // The frontend only uses the generated tracking_code so returning void is fine.
+    return { success: true };
   } catch (error) {
     console.error("Error in submitWhistleblowerReport:", error);
     throw error;
