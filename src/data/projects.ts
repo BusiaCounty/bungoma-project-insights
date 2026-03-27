@@ -250,6 +250,7 @@ export async function submitWhistleblowerReport(report: EnhancedWhistleblowerRep
       policy_acknowledgment: report.policyAcknowledgment || false,
       
       receive_updates: report.receiveUpdates || false,
+      tracking_code: report.trackingCode || null,
       
       // legacy
       project_name: report.projectName || null,
