@@ -64,7 +64,7 @@ export default function AdminWhistleblowerReports() {
         .update({ 
           admin_reply: replyText,
           status: updateStatus
-        })
+        } as any)
         .eq('id', selectedReport.id);
 
       if (error) throw error;
@@ -86,7 +86,7 @@ export default function AdminWhistleblowerReports() {
       
     } catch (error: any) {
       console.error("Error updating report:", error);
-      toast.error("Failed to save reply.");
+      toast.error(`Failed to save reply: ${error.message || 'Unknown database error'}`);
     } finally {
       setSubmitting(false);
     }
