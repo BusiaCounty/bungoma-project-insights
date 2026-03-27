@@ -11,9 +11,9 @@ FOR SELECT
 USING (
   coalesce(auth.jwt()->'user_metadata'->>'role', '') IN ('admin', 'executive')
   OR 
-  public.has_role('admin'::public.app_role, auth.uid())
+  public.has_role(auth.uid(), 'admin'::public.app_role)
   OR 
-  public.has_role('executive'::public.app_role, auth.uid())
+  public.has_role(auth.uid(), 'executive'::public.app_role)
 );
 
 -- Recreate UPDATE policy using the auth.jwt() metadata
@@ -23,14 +23,14 @@ FOR UPDATE
 USING (
   coalesce(auth.jwt()->'user_metadata'->>'role', '') IN ('admin', 'executive')
   OR 
-  public.has_role('admin'::public.app_role, auth.uid())
+  public.has_role(auth.uid(), 'admin'::public.app_role)
   OR 
-  public.has_role('executive'::public.app_role, auth.uid())
+  public.has_role(auth.uid(), 'executive'::public.app_role)
 )
 WITH CHECK (
   coalesce(auth.jwt()->'user_metadata'->>'role', '') IN ('admin', 'executive')
   OR 
-  public.has_role('admin'::public.app_role, auth.uid())
+  public.has_role(auth.uid(), 'admin'::public.app_role)
   OR 
-  public.has_role('executive'::public.app_role, auth.uid())
+  public.has_role(auth.uid(), 'executive'::public.app_role)
 );
