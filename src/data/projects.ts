@@ -213,19 +213,54 @@ export async function submitWhistleblowerReport(report: EnhancedWhistleblowerRep
     
     // Map to the existing database schema (basic fields only)
     // The enhanced migration hasn't been run yet, so we use the current schema
-    const basicReport = {
-      // Use only the fields that exist in the current database
-      project_name: report.projectName || `${report.county} - ${report.subCounty || 'Unknown'}`,
-      sub_county: report.subCounty || report.county,
-      description: `${report.reportTitle}\n\n${report.incidentDescription}\n\nType: ${report.misconductType}\nUrgency: ${report.urgencyLevel}\nCounty: ${report.county}\nRelationship to Org: ${report.relationshipToOrg}`,
-      evidence: report.evidenceDescription || report.evidence || null,
+    // Map to the enhanced existing database schema
+    const fullReport = {
+      report_type: report.reportType,
+      full_name: report.fullName || null,
+      contact_email: report.contactEmail || null,
+      phone_number: report.phoneNumber || null,
+      preferred_contact_method: report.preferredContactMethod || 'None',
+      relationship_to_org: report.relationshipToOrg || null,
+      relationship_other: report.relationshipOther || null,
+      
+      report_title: report.reportTitle,
+      misconduct_type: report.misconductType,
+      misconduct_other: report.misconductOther || null,
+      incident_description: report.incidentDescription,
+      incident_date: report.incidentDate || null,
+      incident_date_end: report.incidentDateEnd || null,
+      county: report.county || null,
+      sub_county: report.subCounty || null,
+      ward: report.ward || null,
+      specific_location: report.specificLocation || null,
+      
+      persons_involved: report.personsInvolved || [],
+      
+      evidence_description: report.evidenceDescription || null,
+      additional_witnesses: report.additionalWitnesses || false,
+      witness_details: report.witnessDetails || null,
+      
+      estimated_impact: report.estimatedImpact || [],
+      issue_ongoing: report.issueOngoing || false,
+      urgency_level: report.urgencyLevel || 'Medium',
+      
+      confidentiality_preference: report.confidentialityPreference ?? true,
+      consent_to_contact: report.consentToContact || false,
+      consent_statement: report.consentStatement || false,
+      policy_acknowledgment: report.policyAcknowledgment || false,
+      
+      receive_updates: report.receiveUpdates || false,
+      
+      // legacy
+      project_name: report.projectName || null,
+      evidence: report.evidence || null,
     };
 
-    console.log("Submitting basic report:", basicReport);
+    console.log("Submitting full report:", fullReport);
     console.log("Supabase URL:", SUPABASE_URL);
     console.log("Supabase Key exists:", !!SUPABASE_PUBLISHABLE_KEY);
 
-    // Try to insert with current schema
+    // Try to insert with updated schema
     console.log("Attempting to insert into whistleblower_reports table...");
     
     // First, let's test if we can read from the table
@@ -237,21 +272,14 @@ export async function submitWhistleblowerReport(report: EnhancedWhistleblowerRep
     console.log("Table test - data:", testData);
     console.log("Table test - error:", testError);
     
-    // Now try the insert
-    const { data, error } = await supabase.from("whistleblower_reports").insert(basicReport).select().single();
+    // Now try the insert - using 'any' to bypass stale typescript types
+    const { data, error } = await supabase.from("whistleblower_reports").insert(fullReport as any).select().single();
     
     console.log("Supabase response data:", data);
     console.log("Supabase response error:", error);
     
     if (error) {
       console.error("Supabase error:", error);
-      
-      // If the table doesn't exist or has schema issues, simulate success
-      if (error.message.includes('column') || error.message.includes('table') || error.message.includes('schema')) {
-        console.warn("Database schema mismatch. Simulating successful submission for testing.");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return { id: 'fallback-id-' + Date.now(), ...basicReport };
-      }
       
       throw new Error(`Database error: ${error.message}`);
     }
