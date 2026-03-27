@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 export type AdminTabId =
   | "overview"
   | "project-manager"
+  | "whistleblower"
   | "users"
   | "rbac"
   | "project-config"
@@ -42,6 +43,7 @@ interface AdminSidebarProps {
 const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
   { id: "project-manager", label: "Project Management", icon: ClipboardList },
+  { id: "whistleblower", label: "Whistleblower Reports", icon: Shield },
   { id: "users", label: "User Management", icon: Users },
   { id: "rbac", label: "Access Control (RBAC)", icon: Shield },
   { id: "project-config", label: "Project Config", icon: FolderTree },

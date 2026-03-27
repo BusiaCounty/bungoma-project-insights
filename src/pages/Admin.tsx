@@ -11,6 +11,7 @@ import FinancialControls from "@/components/admin/FinancialControls";
 import DocumentsMedia from "@/components/admin/DocumentsMedia";
 import ReportsAnalytics from "@/components/admin/ReportsAnalytics";
 import AdminFeedbackViewer from "@/components/admin/AdminFeedbackViewer";
+import AdminWhistleblowerReports from "@/components/admin/AdminWhistleblowerReports";
 import FeedbackAnalytics from "@/components/admin/FeedbackAnalytics";
 import PublicPortalConfig from "@/components/admin/PublicPortalConfig";
 import SystemSettings from "@/components/admin/SystemSettings";
@@ -19,7 +20,7 @@ import NotificationSettings from "@/components/admin/NotificationSettings";
 import { Link } from "react-router-dom";
 
 const allTabs: AdminTabId[] = [
-  "overview", "project-manager", "users", "rbac", "project-config", "geo-admin",
+  "overview", "project-manager", "whistleblower", "users", "rbac", "project-config", "geo-admin",
   "financials", "documents", "reports", "feedback", "feedback-analytics", "transparency", "settings", "audit", "notifications",
 ];
 
@@ -60,6 +61,7 @@ export default function Admin() {
         <div className="p-4 md:p-8 flex-1 w-full max-w-7xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-200">
           {activeTab === "overview" && <AdminOverview />}
           {activeTab === "project-manager" && <AdminProjectManager />}
+          {activeTab === "whistleblower" && <AdminWhistleblowerReports />}
           {activeTab === "users" && <UserManagement />}
           {activeTab === "rbac" && <RBACConfig />}
           {activeTab === "project-config" && <ProjectConfig />}
