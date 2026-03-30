@@ -32,6 +32,7 @@ const Index = () => {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [dateTime, setDateTime] = useState(new Date());
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -80,7 +81,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-[260px_1fr] gap-5 p-5 items-start max-lg:grid-cols-1">
+    <div className={`min-h-screen grid ${isSidebarCollapsed ? 'grid-cols-[76px_1fr]' : 'grid-cols-[260px_1fr]'} gap-5 p-5 items-start max-lg:grid-cols-1 transition-all duration-300 ease-in-out`}>
       <div className="max-lg:hidden">
         <DashboardSidebar
           activeTab={activeTab}
@@ -89,6 +90,8 @@ const Index = () => {
           adminEmail={user?.email}
           onAdminLogin={() => setShowLoginModal(true)}
           onAdminLogout={signOut}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
       </div>
 
