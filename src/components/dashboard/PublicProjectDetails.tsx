@@ -21,7 +21,8 @@ import {
   Target,
   Activity,
   Info,
-  Building
+  Building,
+  Clock
 } from "lucide-react";
 import type { Project } from "@/data/projects";
 
@@ -264,35 +265,112 @@ export default function PublicProjectDetails({ project, open, onOpenChange }: Pu
             </CardContent>
           </Card>
 
-          {/* Community Impact */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Community Impact
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <h5 className="font-medium text-green-800 mb-2">Expected Benefits</h5>
-                  <ul className="text-sm text-green-700 space-y-1">
-                    <li>• Improved infrastructure for {project.ward} residents</li>
-                    <li>• Job creation during construction phase</li>
-                    <li>• Enhanced service delivery in {project.sector}</li>
-                    <li>• Economic development in {project.sub_county}</li>
-                  </ul>
-                </div>
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h5 className="font-medium text-blue-800 mb-2">Service Coverage</h5>
-                  <div className="text-sm text-blue-700">
-                    <p>Estimated beneficiaries: 5,000+ residents</p>
-                    <p>Service area: {project.ward} and surrounding areas</p>
+          {/* Community Impact & Risk Assessment */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Community Impact
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h5 className="font-medium text-green-800 mb-2">Expected Benefits</h5>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>• Improved infrastructure for {project.ward} residents</li>
+                      <li>• Job creation during construction phase</li>
+                      <li>• Enhanced service delivery in {project.sector}</li>
+                      <li>• Economic development in {project.sub_county}</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h5 className="font-medium text-blue-800 mb-2">Service Coverage</h5>
+                    <div className="text-sm text-blue-700">
+                      <p>Estimated beneficiaries: 5,000+ residents</p>
+                      <p>Service area: {project.ward} and surrounding areas</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Climate Risk Assessment
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <h5 className="font-medium text-orange-800 mb-2">Climate Considerations</h5>
+                    <ul className="text-sm text-orange-700 space-y-1">
+                      <li>• Flood risk assessment for {project.ward} area</li>
+                      <li>• Seasonal weather impact analysis</li>
+                      <li>• Sustainable construction materials</li>
+                      <li>• Climate-resilient design features</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 bg-yellow-50 rounded-lg">
+                    <h5 className="font-medium text-yellow-800 mb-2">Risk Mitigation</h5>
+                    <div className="text-sm text-yellow-700 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span>Elevated foundation design for flood protection</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span>Drainage systems integrated in construction</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span>Weather-resistant materials specified</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-yellow-600" />
+                        <span>Environmental impact assessment in progress</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h5 className="font-medium text-blue-800 mb-2">Climate Resilience Score</h5>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Flood Resistance</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                            <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }} />
+                          </div>
+                          <span className="text-sm font-medium">85%</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Drought Tolerance</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                            <div className="bg-blue-500 h-2 rounded-full" style={{ width: '70%' }} />
+                          </div>
+                          <span className="text-sm font-medium">70%</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Sustainability</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                            <div className="bg-purple-500 h-2 rounded-full" style={{ width: '90%' }} />
+                          </div>
+                          <span className="text-sm font-medium">90%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
