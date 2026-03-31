@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { 
   PieChart, 
   Pie, 
@@ -22,9 +23,11 @@ import {
   Activity,
   Info,
   Building,
-  Clock
+  Clock,
+  Map
 } from "lucide-react";
 import type { Project } from "@/data/projects";
+import ProjectLocationMap from "./ProjectLocationMap";
 
 interface PublicProjectDetailsProps {
   project: Project | null;
@@ -371,6 +374,64 @@ export default function PublicProjectDetails({ project, open, onOpenChange }: Pu
               </CardContent>
             </Card>
           </div>
+
+          {/* Map View */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Map className="w-5 h-5" />
+                Project Location
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {project.latitude && project.longitude ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-600 font-medium">Coordinates</p>
+                      <p className="text-lg font-bold text-blue-800">
+                        {project.latitude.toFixed(4)}, {project.longitude.toFixed(4)}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <p className="text-sm text-green-600 font-medium">Sub-County</p>
+                      <p className="text-lg font-bold text-green-800">{project.sub_county}</p>
+                    </div>
+                    <div className="p-3 bg-purple-50 rounded-lg">
+                      <p className="text-sm text-purple-600 font-medium">Ward</p>
+                      <p className="text-lg font-bold text-purple-800">{project.ward}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="h-[400px] rounded-lg overflow-hidden border">
+                    <ProjectLocationMap 
+                      projects={[project]} 
+                      className="w-full h-full"
+                      highlightedId={project.id}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>Interactive map showing project location with surrounding context</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-muted-foreground mb-2">Location Information</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    This project is located in {project.ward}, {project.sub_county}
+                  </p>
+                  <div className="p-4 bg-blue-50 rounded-lg max-w-md mx-auto">
+                    <p className="text-sm text-blue-800">
+                      <strong>Service Area:</strong> {project.ward} and surrounding communities in {project.sub_county}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>

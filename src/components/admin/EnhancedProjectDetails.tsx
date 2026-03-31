@@ -36,9 +36,11 @@ import {
   Upload,
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  Map
 } from "lucide-react";
 import type { Project } from "@/data/projects";
+import ProjectLocationMap from "../dashboard/ProjectLocationMap";
 
 interface EnhancedProjectDetailsProps {
   project: Project | null;
@@ -222,12 +224,13 @@ export default function EnhancedProjectDetails({ project, open, onOpenChange }: 
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="financial">Financial</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="stakeholders">Team</TabsTrigger>
+            <TabsTrigger value="map">Map</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -616,6 +619,182 @@ export default function EnhancedProjectDetails({ project, open, onOpenChange }: 
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Activity className="w-5 h-5" />
+                    Performance Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Budget Efficiency</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }} />
+                        </div>
+                        <span className="text-sm font-medium">85%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Timeline Adherence</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div className="bg-blue-500 h-2 rounded-full" style={{ width: '72%' }} />
+                        </div>
+                        <span className="text-sm font-medium">72%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Quality Score</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div className="bg-purple-500 h-2 rounded-full" style={{ width: '90%' }} />
+                        </div>
+                        <span className="text-sm font-medium">90%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Stakeholder Satisfaction</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div className="bg-orange-500 h-2 rounded-full" style={{ width: '78%' }} />
+                        </div>
+                        <span className="text-sm font-medium">78%</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    Risk Assessment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-3 border-l-4 border-red-500 bg-red-50 rounded">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-medium text-red-800">Budget Overrun Risk</h5>
+                          <p className="text-sm text-red-600 mt-1">Current spending trend may exceed budget</p>
+                        </div>
+                        <Badge className="bg-red-100 text-red-800">High</Badge>
+                      </div>
+                    </div>
+                    <div className="p-3 border-l-4 border-yellow-500 bg-yellow-50 rounded">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-medium text-yellow-800">Timeline Delay</h5>
+                          <p className="text-sm text-yellow-600 mt-1">Design phase extending beyond schedule</p>
+                        </div>
+                        <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
+                      </div>
+                    </div>
+                    <div className="p-3 border-l-4 border-green-500 bg-green-50 rounded">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-medium text-green-800">Resource Availability</h5>
+                          <p className="text-sm text-green-600 mt-1">All required resources are secured</p>
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">Low</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Progress Trend Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={financialData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="budget" stroke="#3b82f6" strokeWidth={2} name="Planned Progress" />
+                    <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={2} name="Actual Progress" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Map Tab */}
+          <TabsContent value="map" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Map className="w-5 h-5" />
+                  Project Location
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {project.latitude && project.longitude ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-600 font-medium">Coordinates</p>
+                        <p className="text-lg font-bold text-blue-800">
+                          {project.latitude.toFixed(4)}, {project.longitude.toFixed(4)}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <p className="text-sm text-green-600 font-medium">Sub-County</p>
+                        <p className="text-lg font-bold text-green-800">{project.sub_county}</p>
+                      </div>
+                      <div className="p-3 bg-purple-50 rounded-lg">
+                        <p className="text-sm text-purple-600 font-medium">Ward</p>
+                        <p className="text-lg font-bold text-purple-800">{project.ward}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="h-[400px] rounded-lg overflow-hidden border">
+                      <ProjectLocationMap 
+                        projects={[project]} 
+                        className="w-full h-full"
+                        highlightedId={project.id}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      <span>Interactive map showing project location with surrounding context</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">No Location Data</h3>
+                    <p className="text-sm text-muted-foreground">
+                      GPS coordinates have not been set for this project.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => {/* Add edit functionality here */}}
+                    >
+                      <MapPin className="w-4 h-4 mr-2" />
+                      Add Location
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
