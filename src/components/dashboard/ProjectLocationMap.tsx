@@ -54,10 +54,13 @@ const mapLayers = {
 };
 
 // Child component to fit map bounds to markers
-function FitBounds({ projects }: { projects: Project[] }) {
+function FitBounds({ projects, highlightedId }: { projects: Project[]; highlightedId?: string | null }) {
   const map = useMap();
 
   useEffect(() => {
+    // Don't fit bounds if there's a highlighted project (let PanToHighlight handle it)
+    if (highlightedId) return;
+
     const coords = projects
       .filter((p) => p.latitude != null && p.longitude != null)
       .map((p) => [p.latitude!, p.longitude!] as [number, number]);
@@ -66,7 +69,7 @@ function FitBounds({ projects }: { projects: Project[] }) {
       const bounds = L.latLngBounds(coords.map(([lat, lng]) => L.latLng(lat, lng)));
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
     }
-  }, [projects, map]);
+  }, [projects, map, highlightedId]);
 
   return null;
 }
@@ -80,15 +83,24 @@ function PanToHighlight({
   projects: Project[];
 }) {
   const map = useMap();
+  const hasPanned = useRef(false);
 
   useEffect(() => {
-    if (!highlightedId) return;
+    if (!highlightedId) {
+      hasPanned.current = false;
+      return;
+    }
+    
+    // Only pan once per highlightedId change
+    if (hasPanned.current) return;
+    
     const project = projects.find((p) => p.id === highlightedId);
     if (project && project.latitude != null && project.longitude != null) {
       map.setView([project.latitude, project.longitude], 15, {
         animate: true,
         duration: 0.8,
       });
+      hasPanned.current = true;
     }
   }, [highlightedId, projects, map]);
 
@@ -185,7 +197,7 @@ export default function ProjectLocationMap({
           minZoom={3}
         />
 
-        <FitBounds projects={projects} />
+        <FitBounds projects={projects} highlightedId={highlightedId} />
         <PanToHighlight highlightedId={highlightedId ?? null} projects={mappableProjects} />
 
         {mappableProjects.map((project) => (
