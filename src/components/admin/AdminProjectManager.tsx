@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Pencil, Trash2, Loader2, Upload, MapPin, Navigation } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Loader2, Upload, MapPin, Navigation, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { fetchProjects, createProject, updateProject, deleteProject, bulkUpdateProjectLocation, SUB_COUNTIES, SECTORS, STATUSES, FINANCIAL_YEARS, getWards } from "@/data/projects";
 import type { Project } from "@/data/projects";
@@ -58,6 +58,8 @@ export default function AdminProjectManager() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLocationOpen, setBulkLocationOpen] = useState(false);
   const [bulkLocationForm, setBulkLocationForm] = useState({ sub_county: "", ward: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects"],
@@ -102,10 +104,11 @@ export default function AdminProjectManager() {
   });
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === filtered.length && filtered.length > 0) {
-      setSelectedIds([]);
+    const currentPageIds = paginatedProjects.map((p) => p.id);
+    if (currentPageIds.every(id => selectedIds.includes(id))) {
+      setSelectedIds(selectedIds.filter(id => !currentPageIds.includes(id)));
     } else {
-      setSelectedIds(filtered.map((p) => p.id));
+      setSelectedIds([...selectedIds, ...currentPageIds]);
     }
   };
 
@@ -123,6 +126,17 @@ export default function AdminProjectManager() {
       p.sub_county.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.sector.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Reset current page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProjects = filtered.slice(startIndex, endIndex);
 
   const openCreate = () => {
     setEditingProject(null);
@@ -233,9 +247,9 @@ export default function AdminProjectManager() {
                   <TableRow>
                     <TableHead className="w-[40px] text-center">
                       <Checkbox 
-                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                        checked={paginatedProjects.length > 0 && paginatedProjects.every(p => selectedIds.includes(p.id))}
                         onCheckedChange={toggleSelectAll}
-                        aria-label="Select all"
+                        aria-label="Select all on current page"
                       />
                     </TableHead>
                     <TableHead>Project Name</TableHead>
@@ -248,14 +262,14 @@ export default function AdminProjectManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.length === 0 ? (
+                  {paginatedProjects.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
-                        No projects found.
+                        {filtered.length === 0 ? "No projects found." : "No projects to display on this page."}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filtered.map((project) => (
+                    paginatedProjects.map((project) => (
                       <TableRow key={project.id}>
                         <TableCell>
                           <Checkbox 
@@ -311,6 +325,77 @@ export default function AdminProjectManager() {
                   )}
                 </TableBody>
               </Table>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 py-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>Showing {startIndex + 1} to {Math.min(endIndex, filtered.length)} of {filtered.length} projects</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setCurrentPage(pageNum)}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <span className="text-sm text-muted-foreground">Items per page:</span>
+                      <Select value={itemsPerPage.toString()} onValueChange={(value) => {
+                        setItemsPerPage(Number(value));
+                        setCurrentPage(1);
+                      }}>
+                        <SelectTrigger className="w-16 h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
