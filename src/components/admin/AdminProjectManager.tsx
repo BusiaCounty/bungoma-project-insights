@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Pencil, Trash2, Loader2, Upload, MapPin, Navigation, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Loader2, Upload, MapPin, Navigation, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { fetchProjects, createProject, updateProject, deleteProject, bulkUpdateProjectLocation, SUB_COUNTIES, SECTORS, STATUSES, FINANCIAL_YEARS, getWards } from "@/data/projects";
 import type { Project } from "@/data/projects";
 import CsvProjectImport from "./CsvProjectImport";
+import EnhancedProjectDetails from "./EnhancedProjectDetails";
 
 type ProjectFormData = {
   name: string;
@@ -60,6 +61,8 @@ export default function AdminProjectManager() {
   const [bulkLocationForm, setBulkLocationForm] = useState({ sub_county: "", ward: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["projects"],
@@ -162,6 +165,11 @@ export default function AdminProjectManager() {
       longitude: project.longitude ?? null,
     });
     setDialogOpen(true);
+  };
+
+  const openDetails = (project: Project) => {
+    setSelectedProject(project);
+    setDetailsOpen(true);
   };
 
   const closeDialog = () => {
@@ -312,6 +320,9 @@ export default function AdminProjectManager() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openDetails(project)}>
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(project)}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
@@ -632,6 +643,13 @@ export default function AdminProjectManager() {
 
       {/* CSV Import */}
       <CsvProjectImport open={csvOpen} onOpenChange={setCsvOpen} />
+
+      {/* Enhanced Project Details */}
+      <EnhancedProjectDetails 
+        project={selectedProject} 
+        open={detailsOpen} 
+        onOpenChange={setDetailsOpen} 
+      />
     </div>
   );
 }

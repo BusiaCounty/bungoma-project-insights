@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Pencil, Trash2, PlusCircle, Download } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, Download, Eye } from "lucide-react";
 import type { Project } from "@/data/projects";
 import ProjectFormModal from "./ProjectFormModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+import PublicProjectDetails from "./PublicProjectDetails";
 import { createProject, updateProject, deleteProject } from "@/data/projects";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePagination } from "@/hooks/usePagination";
@@ -31,6 +32,8 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<ModalState>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, pageSize, setPageSize } =
     usePagination(projects, 15);
 
@@ -98,6 +101,11 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
       await deleteProject(modal.project.id);
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
     }
+  };
+
+  const openDetails = (project: Project) => {
+    setSelectedProject(project);
+    setDetailsOpen(true);
   };
 
   const columnCount = isAdmin ? 11 : 10;
@@ -218,17 +226,28 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setExpandedId((current) =>
-                            current === p.id ? null : p.id,
-                          )
-                        }
-                        className="text-[11px] font-semibold text-primary hover:underline"
-                      >
-                        {expandedId === p.id ? "Hide details" : "More details"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openDetails(p)}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                        >
+                          <Eye className="w-3 h-3" />
+                          View Details
+                        </button>
+                        <span className="text-muted-foreground">•</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedId((current) =>
+                              current === p.id ? null : p.id,
+                            )
+                          }
+                          className="text-[11px] font-semibold text-primary hover:underline"
+                        >
+                          {expandedId === p.id ? "Hide" : "Quick"}
+                        </button>
+                      </div>
                     </td>
                     {isAdmin && (
                       <td className="px-3 py-2">
@@ -353,6 +372,13 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
           onClose={() => setModal(null)}
         />
       )}
+
+      {/* Public Project Details */}
+      <PublicProjectDetails 
+        project={selectedProject} 
+        open={detailsOpen} 
+        onOpenChange={setDetailsOpen} 
+      />
     </>
   );
 };
