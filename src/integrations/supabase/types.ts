@@ -324,26 +324,158 @@ export type Database = {
       }
       whistleblower_reports: {
         Row: {
+          additional_witnesses: boolean | null
+          admin_reply: string | null
+          confidentiality_preference: boolean | null
+          consent_statement: boolean | null
+          consent_to_contact: boolean | null
+          contact_email: string | null
+          county: string | null
           created_at: string
-          description: string
+          estimated_impact: string[] | null
           evidence: string | null
+          evidence_description: string | null
+          full_name: string | null
           id: string
+          incident_date: string | null
+          incident_date_end: string | null
+          incident_description: string
+          issue_ongoing: boolean | null
+          misconduct_other: string | null
+          misconduct_type: Database["public"]["Enums"]["misconduct_type"]
+          persons_involved: Json | null
+          phone_number: string | null
+          policy_acknowledgment: boolean | null
+          preferred_contact_method:
+            | Database["public"]["Enums"]["contact_method"]
+            | null
+          project_name: string | null
+          receive_updates: boolean | null
+          relationship_other: string | null
+          relationship_to_org:
+            | Database["public"]["Enums"]["relationship_to_org"]
+            | null
+          report_title: string
+          report_type: Database["public"]["Enums"]["report_type"]
+          specific_location: string | null
+          status: string | null
+          sub_county: string | null
+          tracking_code: string | null
+          updated_at: string
+          urgency_level: Database["public"]["Enums"]["urgency_level"] | null
+          ward: string | null
+          witness_details: string | null
+        }
+        Insert: {
+          additional_witnesses?: boolean | null
+          admin_reply?: string | null
+          confidentiality_preference?: boolean | null
+          consent_statement?: boolean | null
+          consent_to_contact?: boolean | null
+          contact_email?: string | null
+          county?: string | null
+          created_at?: string
+          estimated_impact?: string[] | null
+          evidence?: string | null
+          evidence_description?: string | null
+          full_name?: string | null
+          id?: string
+          incident_date?: string | null
+          incident_date_end?: string | null
+          incident_description: string
+          issue_ongoing?: boolean | null
+          misconduct_other?: string | null
+          misconduct_type: Database["public"]["Enums"]["misconduct_type"]
+          persons_involved?: Json | null
+          phone_number?: string | null
+          policy_acknowledgment?: boolean | null
+          preferred_contact_method?:
+            | Database["public"]["Enums"]["contact_method"]
+            | null
+          project_name?: string | null
+          receive_updates?: boolean | null
+          relationship_other?: string | null
+          relationship_to_org?:
+            | Database["public"]["Enums"]["relationship_to_org"]
+            | null
+          report_title: string
+          report_type?: Database["public"]["Enums"]["report_type"]
+          specific_location?: string | null
+          status?: string | null
+          sub_county?: string | null
+          tracking_code?: string | null
+          updated_at?: string
+          urgency_level?: Database["public"]["Enums"]["urgency_level"] | null
+          ward?: string | null
+          witness_details?: string | null
+        }
+        Update: {
+          additional_witnesses?: boolean | null
+          admin_reply?: string | null
+          confidentiality_preference?: boolean | null
+          consent_statement?: boolean | null
+          consent_to_contact?: boolean | null
+          contact_email?: string | null
+          county?: string | null
+          created_at?: string
+          estimated_impact?: string[] | null
+          evidence?: string | null
+          evidence_description?: string | null
+          full_name?: string | null
+          id?: string
+          incident_date?: string | null
+          incident_date_end?: string | null
+          incident_description?: string
+          issue_ongoing?: boolean | null
+          misconduct_other?: string | null
+          misconduct_type?: Database["public"]["Enums"]["misconduct_type"]
+          persons_involved?: Json | null
+          phone_number?: string | null
+          policy_acknowledgment?: boolean | null
+          preferred_contact_method?:
+            | Database["public"]["Enums"]["contact_method"]
+            | null
+          project_name?: string | null
+          receive_updates?: boolean | null
+          relationship_other?: string | null
+          relationship_to_org?:
+            | Database["public"]["Enums"]["relationship_to_org"]
+            | null
+          report_title?: string
+          report_type?: Database["public"]["Enums"]["report_type"]
+          specific_location?: string | null
+          status?: string | null
+          sub_county?: string | null
+          tracking_code?: string | null
+          updated_at?: string
+          urgency_level?: Database["public"]["Enums"]["urgency_level"] | null
+          ward?: string | null
+          witness_details?: string | null
+        }
+        Relationships: []
+      }
+      whistleblower_reports_backup: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          evidence: string | null
+          id: string | null
           project_name: string | null
           sub_county: string | null
         }
         Insert: {
-          created_at?: string
-          description: string
+          created_at?: string | null
+          description?: string | null
           evidence?: string | null
-          id?: string
+          id?: string | null
           project_name?: string | null
           sub_county?: string | null
         }
         Update: {
-          created_at?: string
-          description?: string
+          created_at?: string | null
+          description?: string | null
           evidence?: string | null
-          id?: string
+          id?: string | null
           project_name?: string | null
           sub_county?: string | null
         }
@@ -354,6 +486,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_tracking_code: { Args: never; Returns: string }
+      get_whistleblower_report_by_tracking: {
+        Args: { p_tracking_code: string }
+        Returns: {
+          admin_reply: string
+          created_at: string
+          id: string
+          misconduct_type: Database["public"]["Enums"]["misconduct_type"]
+          report_title: string
+          status: string
+          urgency_level: Database["public"]["Enums"]["urgency_level"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -364,7 +509,27 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "staff" | "executive" | "viewer"
+      contact_method: "Email" | "Phone" | "None"
+      impact_level: "Low" | "Medium" | "High" | "Critical"
+      incident_relationship: "Directly involved" | "Witness" | "Supervisor"
+      misconduct_type:
+        | "Fraud"
+        | "Corruption"
+        | "Abuse of Office"
+        | "Harassment"
+        | "Financial Mismanagement"
+        | "Procurement Irregularities"
+        | "Data Misuse"
+        | "Other"
       project_status: "Completed" | "Ongoing" | "Stalled"
+      relationship_to_org:
+        | "Employee"
+        | "Contractor"
+        | "Citizen/Public"
+        | "Vendor/Partner"
+        | "Other"
+      report_type: "Anonymous" | "Identified"
+      urgency_level: "Low" | "Medium" | "High" | "Critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -493,7 +658,29 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "staff", "executive", "viewer"],
+      contact_method: ["Email", "Phone", "None"],
+      impact_level: ["Low", "Medium", "High", "Critical"],
+      incident_relationship: ["Directly involved", "Witness", "Supervisor"],
+      misconduct_type: [
+        "Fraud",
+        "Corruption",
+        "Abuse of Office",
+        "Harassment",
+        "Financial Mismanagement",
+        "Procurement Irregularities",
+        "Data Misuse",
+        "Other",
+      ],
       project_status: ["Completed", "Ongoing", "Stalled"],
+      relationship_to_org: [
+        "Employee",
+        "Contractor",
+        "Citizen/Public",
+        "Vendor/Partner",
+        "Other",
+      ],
+      report_type: ["Anonymous", "Identified"],
+      urgency_level: ["Low", "Medium", "High", "Critical"],
     },
   },
 } as const
