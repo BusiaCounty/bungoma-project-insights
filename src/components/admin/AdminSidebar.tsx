@@ -16,6 +16,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { AppRole } from "@/hooks/useAdminAuth";
 
 export type AdminTabId =
   | "overview"
@@ -38,28 +39,54 @@ export type AdminTabId =
 interface AdminSidebarProps {
   activeTab: AdminTabId;
   onTabChange: (tab: AdminTabId) => void;
+  userRole: AppRole | null;
 }
 
-const adminNavLinks: { id: AdminTabId; label: string; icon: React.ElementType }[] = [
-  { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
-  { id: "project-manager", label: "Project Management", icon: ClipboardList },
-  { id: "whistleblower", label: "Whistleblower Reports", icon: Shield },
-  { id: "users", label: "User Management", icon: Users },
-  { id: "rbac", label: "Access Control (RBAC)", icon: Shield },
-  { id: "project-config", label: "Project Config", icon: FolderTree },
-  { id: "geo-admin", label: "Geographic Admin", icon: MapPin },
-  { id: "financials", label: "Financial Controls", icon: Banknote },
-  { id: "documents", label: "Media & Documents", icon: Files },
-  { id: "reports", label: "Reports & Analytics", icon: BarChart },
-  { id: "feedback", label: "Citizen Feedback", icon: MessageSquareText },
-  { id: "feedback-analytics", label: "Feedback Analytics", icon: TrendingUp },
-  { id: "transparency", label: "Public Portal Views", icon: Eye },
-  { id: "settings", label: "System Settings", icon: Settings },
-  { id: "audit", label: "Audit & Security", icon: ActivitySquare },
-  { id: "notifications", label: "Alerts & Notifications", icon: BellRing },
+interface NavLink {
+  id: AdminTabId;
+  label: string;
+  icon: React.ElementType;
+  /** Roles that can see this tab. Empty = all authenticated roles */
+  allowedRoles: AppRole[];
+}
+
+const adminNavLinks: NavLink[] = [
+  { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard, allowedRoles: ["admin", "executive", "staff", "viewer"] },
+  { id: "project-manager", label: "Project Management", icon: ClipboardList, allowedRoles: ["admin", "staff"] },
+  { id: "whistleblower", label: "Whistleblower Reports", icon: Shield, allowedRoles: ["admin", "executive"] },
+  { id: "users", label: "User Management", icon: Users, allowedRoles: ["admin"] },
+  { id: "rbac", label: "Access Control (RBAC)", icon: Shield, allowedRoles: ["admin"] },
+  { id: "project-config", label: "Project Config", icon: FolderTree, allowedRoles: ["admin", "staff"] },
+  { id: "geo-admin", label: "Geographic Admin", icon: MapPin, allowedRoles: ["admin", "staff"] },
+  { id: "financials", label: "Financial Controls", icon: Banknote, allowedRoles: ["admin", "executive"] },
+  { id: "documents", label: "Media & Documents", icon: Files, allowedRoles: ["admin", "staff"] },
+  { id: "reports", label: "Reports & Analytics", icon: BarChart, allowedRoles: ["admin", "executive", "viewer"] },
+  { id: "feedback", label: "Citizen Feedback", icon: MessageSquareText, allowedRoles: ["admin", "staff"] },
+  { id: "feedback-analytics", label: "Feedback Analytics", icon: TrendingUp, allowedRoles: ["admin", "executive"] },
+  { id: "transparency", label: "Public Portal Views", icon: Eye, allowedRoles: ["admin", "executive", "viewer"] },
+  { id: "settings", label: "System Settings", icon: Settings, allowedRoles: ["admin"] },
+  { id: "audit", label: "Audit & Security", icon: ActivitySquare, allowedRoles: ["admin"] },
+  { id: "notifications", label: "Alerts & Notifications", icon: BellRing, allowedRoles: ["admin"] },
 ];
 
-export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
+const roleLabelMap: Record<AppRole, string> = {
+  admin: "Super Admin",
+  executive: "Executive",
+  staff: "Staff",
+  viewer: "Viewer",
+};
+
+export function getVisibleTabs(role: AppRole | null): AdminTabId[] {
+  if (!role) return ["overview"];
+  return adminNavLinks
+    .filter((link) => link.allowedRoles.includes(role))
+    .map((link) => link.id);
+}
+
+export default function AdminSidebar({ activeTab, onTabChange, userRole }: AdminSidebarProps) {
+  const visibleTabs = getVisibleTabs(userRole);
+  const visibleLinks = adminNavLinks.filter((link) => visibleTabs.includes(link.id));
+
   return (
     <aside className="h-screen sticky top-0 bg-card border-r border-border shadow-sm flex flex-col pt-6 pb-4 overflow-y-auto w-80 min-w-[20rem] max-lg:hidden flex-shrink-0 relative z-10">
       <div className="px-6 pb-6 mb-6 border-b border-border">
@@ -76,7 +103,7 @@ export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarPro
 
       <div className="px-3 flex flex-col gap-1 pb-10">
         <h2 className="px-3 text-[10px] uppercase font-black tracking-wider text-muted-foreground/70 mb-2">Core Modules</h2>
-        {adminNavLinks.map((item) => {
+        {visibleLinks.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
@@ -100,7 +127,9 @@ export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarPro
 
       <div className="mt-auto px-6">
         <div className="p-4 rounded-xl bg-muted/50 border border-border/50 text-center flex flex-col items-center">
-          <p className="text-xs font-medium text-muted-foreground mb-3">Logged in as Super Admin</p>
+          <p className="text-xs font-medium text-muted-foreground mb-3">
+            Logged in as {userRole ? roleLabelMap[userRole] : "User"}
+          </p>
           <Link to="/" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
             Back to Public View
           </Link>

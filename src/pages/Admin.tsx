@@ -1,5 +1,6 @@
 import { useState } from "react";
-import AdminSidebar, { AdminTabId } from "@/components/admin/AdminSidebar";
+import AdminSidebar, { AdminTabId, getVisibleTabs } from "@/components/admin/AdminSidebar";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminProjectManager from "@/components/admin/AdminProjectManager";
@@ -18,18 +19,50 @@ import SystemSettings from "@/components/admin/SystemSettings";
 import AuditSecurity from "@/components/admin/AuditSecurity";
 import NotificationSettings from "@/components/admin/NotificationSettings";
 import { Link } from "react-router-dom";
-
-const allTabs: AdminTabId[] = [
-  "overview", "project-manager", "whistleblower", "users", "rbac", "project-config", "geo-admin",
-  "financials", "documents", "reports", "feedback", "feedback-analytics", "transparency", "settings", "audit", "notifications",
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { Shield } from "lucide-react";
 
 export default function Admin() {
+  const { user, role, isLoading, signOut } = useAdminAuth();
   const [activeTab, setActiveTab] = useState<AdminTabId>("overview");
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Skeleton className="h-12 w-48" />
+      </div>
+    );
+  }
+
+  if (!user || !role) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center p-8 max-w-md">
+          <Shield className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-foreground mb-2">Access Denied</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            {!user
+              ? "You must be logged in to access the admin portal."
+              : "Your account does not have an assigned role. Contact a system administrator."}
+          </p>
+          <Link to="/" className="text-sm font-bold text-primary hover:underline">
+            Back to Public View
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const visibleTabs = getVisibleTabs(role);
+
+  // If user navigates to a tab they can't see, reset to overview
+  if (!visibleTabs.includes(activeTab)) {
+    setActiveTab("overview");
+  }
 
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans">
-      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} userRole={role} />
       
       <main className="flex-1 w-full flex flex-col min-w-0 max-h-screen overflow-y-auto">
         <div className="lg:hidden p-4 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between">
@@ -43,7 +76,7 @@ export default function Admin() {
         </div>
 
         <div className="lg:hidden p-3 border-b border-border bg-background overflow-x-auto flex gap-2 hide-scrollbar">
-          {allTabs.map((tab) => (
+          {visibleTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
