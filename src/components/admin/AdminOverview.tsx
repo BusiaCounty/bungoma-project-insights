@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Activity, MapPin, AlertTriangle, TrendingUp, CheckCircle, Clock, DollarSign, Users } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,6 +22,11 @@ interface BudgetByStatus {
   spent: number;
 }
 
+interface GeoData {
+  name: string;
+  value: number;
+}
+
 interface RecentProject {
   id: string;
   name: string;
@@ -29,21 +34,41 @@ interface RecentProject {
   updated_at: string;
 }
 
+const GEO_COLORS = ["#2563EB", "#0EA5E9", "#16A34A", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#EF4444", "#6366F1", "#D946EF"];
+
+async function fetchAllProjects() {
+  const pageSize = 1000;
+  let from = 0;
+  let all: any[] = [];
+  while (true) {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("id, name, status, budget, actual_spend, sub_county, ward, updated_at")
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data?.length) break;
+    all = all.concat(data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
+
 export default function AdminOverview() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [budgetData, setBudgetData] = useState<BudgetByStatus[]>([]);
+  const [geoData, setGeoData] = useState<GeoData[]>([]);
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [projectsRes, feedbackRes, reportsRes] = await Promise.all([
-        supabase.from("projects").select("id, name, status, budget, actual_spend, updated_at"),
+      const [projects, feedbackRes, reportsRes] = await Promise.all([
+        fetchAllProjects(),
         supabase.from("project_feedback").select("id", { count: "exact", head: true }),
         supabase.from("whistleblower_reports").select("id", { count: "exact", head: true }),
       ]);
 
-      const projects = projectsRes.data || [];
       const total = projects.length;
       const ongoing = projects.filter(p => p.status === "Ongoing").length;
       const completed = projects.filter(p => p.status === "Completed").length;
@@ -69,6 +94,18 @@ export default function AdminOverview() {
         budget: Math.round(v.budget / 1_000_000),
         spent: Math.round(v.spent / 1_000_000),
       })));
+
+      // Geographical distribution by sub_county
+      const geoMap: Record<string, number> = {};
+      projects.forEach(p => {
+        const key = p.sub_county || "Unassigned";
+        geoMap[key] = (geoMap[key] || 0) + 1;
+      });
+      setGeoData(
+        Object.entries(geoMap)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value)
+      );
 
       // Recent projects
       const sorted = [...projects].sort((a, b) =>
@@ -233,21 +270,69 @@ export default function AdminOverview() {
         </Card>
       </div>
 
-      {/* Map placeholder */}
+      {/* Geographical Distribution - Live */}
       <Card className="border-border shadow-sm overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b border-border">
+        <CardHeader className="border-b border-border">
           <CardTitle className="text-lg flex items-center gap-2">
             <MapPin className="w-5 h-5 text-primary" />
             Geographical Distribution
           </CardTitle>
-          <CardDescription>Interactive map configuration preview</CardDescription>
+          <CardDescription>Projects by Sub-County — {stats!.total} total projects</CardDescription>
         </CardHeader>
-        <CardContent className="h-[400px] p-0 bg-muted/10 relative flex items-center justify-center pointer-events-none">
-          <div className="absolute inset-0 bg-[url('https://maps.wikimedia.org/osm-intl/6/38/31.png')] bg-cover bg-center opacity-30 mix-blend-luminosity"></div>
-          <div className="relative z-10 bg-background/80 backdrop-blur-sm p-4 rounded-xl border border-border shadow-sm text-center">
-            <MapPin className="w-8 h-8 text-primary mx-auto mb-2" />
-            <h4 className="font-bold text-foreground">Interactive Maps Integration</h4>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">Real-time mapping data for projects by ward, sub-county, and county levels.</p>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pie Chart */}
+            <div className="h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={geoData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={120}
+                    innerRadius={50}
+                    paddingAngle={2}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    labelLine={{ strokeWidth: 1 }}
+                    style={{ fontSize: 10 }}
+                  >
+                    {geoData.map((_, i) => (
+                      <Cell key={i} fill={GEO_COLORS[i % GEO_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Bar breakdown */}
+            <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2">
+              {geoData.map((item, i) => {
+                const pct = stats!.total > 0 ? (item.value / stats!.total) * 100 : 0;
+                return (
+                  <div key={item.name} className="flex items-center gap-3">
+                    <div
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ backgroundColor: GEO_COLORS[i % GEO_COLORS.length] }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-foreground font-medium truncate">{item.name}</span>
+                        <span className="text-muted-foreground shrink-0 ml-2">{item.value} ({pct.toFixed(1)}%)</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${pct}%`, backgroundColor: GEO_COLORS[i % GEO_COLORS.length] }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </CardContent>
       </Card>
