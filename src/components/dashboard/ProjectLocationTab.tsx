@@ -36,6 +36,8 @@ export default function ProjectLocationTab({
   const [filterStatus, setFilterStatus] = useState("all");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filtered = useMemo(() => {
     return projects.filter((p) => {
@@ -50,6 +52,19 @@ export default function ProjectLocationTab({
       return matchesSearch && matchesSubCounty && matchesStatus;
     });
   }, [projects, search, filterSubCounty, filterStatus]);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [search, filterSubCounty, filterStatus]);
+
+  // Paginated projects for list view
+  const paginatedProjects = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filtered.slice(startIndex, startIndex + pageSize);
+  }, [filtered, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
 
   const mappedCount = filtered.filter(
     (p) => p.latitude != null && p.longitude != null,
@@ -294,12 +309,12 @@ export default function ProjectLocationTab({
         <Card className="border-border shadow-sm">
           <CardContent className="p-0">
             <div className="divide-y divide-border">
-              {filtered.length === 0 ? (
+              {paginatedProjects.length === 0 ? (
                 <div className="py-16 text-center text-sm text-muted-foreground">
                   No projects match your filters.
                 </div>
               ) : (
-                filtered.map((project) => (
+                paginatedProjects.map((project) => (
                   <div
                     key={project.id}
                     className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors group"
@@ -369,6 +384,16 @@ export default function ProjectLocationTab({
                 ))
               )}
             </div>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              startIndex={(currentPage - 1) * pageSize}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              pageSizeOptions={[10, 25, 50]}
+              onPageSizeChange={setPageSize}
+            />
           </CardContent>
         </Card>
       )}
