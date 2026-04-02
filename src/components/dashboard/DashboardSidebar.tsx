@@ -21,7 +21,8 @@ export type TabId =
   | "status"
   | "financials"
   | "committee"
-  | "whistleblower";
+  | "whistleblower"
+  | "feedback-views";
 
 interface DashboardSidebarProps {
   activeTab: TabId;
