@@ -79,6 +79,7 @@ const Index = () => {
     financials: "Financials",
     committee: "PMC",
     whistleblower: "Report",
+    "feedback-views": "Feedback",
   };
 
   return (
