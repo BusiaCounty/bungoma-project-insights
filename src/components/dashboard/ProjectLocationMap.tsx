@@ -56,8 +56,11 @@ const mapLayers = {
 // Child component to fit map bounds to markers
 function FitBounds({ projects, highlightedId }: { projects: Project[]; highlightedId?: string | null }) {
   const map = useMap();
+  const hasFitted = useRef(false);
 
   useEffect(() => {
+    // Only fit bounds once on initial load
+    if (hasFitted.current) return;
     // Don't fit bounds if there's a highlighted project (let PanToHighlight handle it)
     if (highlightedId) return;
 
@@ -68,6 +71,7 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
     if (coords.length > 0) {
       const bounds = L.latLngBounds(coords.map(([lat, lng]) => L.latLng(lat, lng)));
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      hasFitted.current = true;
     }
   }, [projects, map, highlightedId]);
 
