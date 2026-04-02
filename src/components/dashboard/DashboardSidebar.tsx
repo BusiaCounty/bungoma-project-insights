@@ -108,7 +108,7 @@ const DashboardSidebar = ({
       <div className={`flex items-center mb-6 relative ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         <div className="flex gap-3 items-center min-w-0">
           <div className="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-md shrink-0">
-            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+            <img src="/pm.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
           {!isCollapsed && (
             <div className="truncate">
