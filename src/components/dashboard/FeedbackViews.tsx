@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquareText, ShieldAlert, Star, Clock, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
+import PaginationControls from "./PaginationControls";
 
 interface FeedbackWithReplies {
   id: string;
@@ -25,6 +26,10 @@ export default function FeedbackViews() {
   const [search, setSearch] = useState("");
   const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set());
   const [expandedReport, setExpandedReport] = useState<Set<string>>(new Set());
+  const [feedbackPage, setFeedbackPage] = useState(1);
+  const [feedbackPageSize, setFeedbackPageSize] = useState(10);
+  const [reportPage, setReportPage] = useState(1);
+  const [reportPageSize, setReportPageSize] = useState(10);
 
   const { data: feedbackData = [], isLoading: feedbackLoading } = useQuery({
     queryKey: ["public-feedback-views"],
@@ -114,6 +119,28 @@ export default function FeedbackViews() {
     (r.sub_county || "").toLowerCase().includes(search.toLowerCase())
   );
 
+  // Reset pages when search changes
+  useMemo(() => {
+    setFeedbackPage(1);
+    setReportPage(1);
+  }, [search]);
+
+  // Paginated feedback
+  const paginatedFeedback = useMemo(() => {
+    const startIndex = (feedbackPage - 1) * feedbackPageSize;
+    return filteredFeedback.slice(startIndex, startIndex + feedbackPageSize);
+  }, [filteredFeedback, feedbackPage, feedbackPageSize]);
+
+  const feedbackTotalPages = Math.ceil(filteredFeedback.length / feedbackPageSize);
+
+  // Paginated reports
+  const paginatedReports = useMemo(() => {
+    const startIndex = (reportPage - 1) * reportPageSize;
+    return filteredReports.slice(startIndex, startIndex + reportPageSize);
+  }, [filteredReports, reportPage, reportPageSize]);
+
+  const reportTotalPages = Math.ceil(filteredReports.length / reportPageSize);
+
   const statusColor = (s: string) => {
     switch (s?.toLowerCase()) {
       case "resolved": return "bg-green-500/10 text-green-700 border-green-500/20";
@@ -166,67 +193,79 @@ export default function FeedbackViews() {
           ) : filteredFeedback.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">No feedback found.</div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {filteredFeedback.map(f => {
-                const isExpanded = expandedFeedback.has(f.id);
-                const adminReplies = f.replies.filter(r => r.is_admin);
-                return (
-                  <Card key={f.id} className="border-border shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className="text-sm font-bold text-foreground">{f.author_name}</span>
-                            <Badge variant="outline" className={`text-[10px] ${statusColor(f.status)}`}>
-                              {f.status}
-                            </Badge>
-                            {f.tracking_number && (
-                              <span className="text-[10px] text-muted-foreground font-mono">{f.tracking_number}</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            <span className="font-semibold text-foreground">Project: {f.project_name}</span> • {format(new Date(f.created_at), "dd MMM yyyy")}
-                          </p>
-                          {f.rating && (
-                            <div className="flex items-center gap-0.5 mb-2">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star key={i} className={`w-3 h-3 ${i < f.rating! ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"}`} />
-                              ))}
+            <>
+              <div className="flex flex-col gap-3">
+                {paginatedFeedback.map(f => {
+                  const isExpanded = expandedFeedback.has(f.id);
+                  const adminReplies = f.replies.filter(r => r.is_admin);
+                  return (
+                    <Card key={f.id} className="border-border shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="text-sm font-bold text-foreground">{f.author_name}</span>
+                              <Badge variant="outline" className={`text-[10px] ${statusColor(f.status)}`}>
+                                {f.status}
+                              </Badge>
+                              {f.tracking_number && (
+                                <span className="text-[10px] text-muted-foreground font-mono">{f.tracking_number}</span>
+                              )}
                             </div>
-                          )}
-                          <p className="text-sm text-foreground">{f.comment}</p>
-                        </div>
-                        {adminReplies.length > 0 && (
-                          <button onClick={() => toggleFeedback(f.id)} className="shrink-0 p-1 hover:bg-muted rounded">
-                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                          </button>
-                        )}
-                      </div>
-
-                      {adminReplies.length > 0 && isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-border space-y-2">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Admin Replies</p>
-                          {adminReplies.map(r => (
-                            <div key={r.id} className="bg-primary/5 border border-primary/10 rounded-lg p-3">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-bold text-primary">{r.author_name}</span>
-                                <span className="text-[10px] text-muted-foreground">{format(new Date(r.created_at), "dd MMM yyyy")}</span>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              <span className="font-semibold text-foreground">Project: {f.project_name}</span> • {format(new Date(f.created_at), "dd MMM yyyy")}
+                            </p>
+                            {f.rating && (
+                              <div className="flex items-center gap-0.5 mb-2">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star key={i} className={`w-3 h-3 ${i < f.rating! ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"}`} />
+                                ))}
                               </div>
-                              <p className="text-sm text-foreground">{r.message}</p>
-                            </div>
-                          ))}
+                            )}
+                            <p className="text-sm text-foreground">{f.comment}</p>
+                          </div>
+                          {adminReplies.length > 0 && (
+                            <button onClick={() => toggleFeedback(f.id)} className="shrink-0 p-1 hover:bg-muted rounded">
+                              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+                          )}
                         </div>
-                      )}
-                      {adminReplies.length > 0 && !isExpanded && (
-                        <p className="mt-2 text-[10px] text-primary font-semibold cursor-pointer" onClick={() => toggleFeedback(f.id)}>
-                          {adminReplies.length} admin {adminReplies.length === 1 ? "reply" : "replies"} — click to view
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+
+                        {adminReplies.length > 0 && isExpanded && (
+                          <div className="mt-3 pt-3 border-t border-border space-y-2">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Admin Replies</p>
+                            {adminReplies.map(r => (
+                              <div key={r.id} className="bg-primary/5 border border-primary/10 rounded-lg p-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-bold text-primary">{r.author_name}</span>
+                                  <span className="text-[10px] text-muted-foreground">{format(new Date(r.created_at), "dd MMM yyyy")}</span>
+                                </div>
+                                <p className="text-sm text-foreground">{r.message}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {adminReplies.length > 0 && !isExpanded && (
+                          <p className="mt-2 text-[10px] text-primary font-semibold cursor-pointer" onClick={() => toggleFeedback(f.id)}>
+                            {adminReplies.length} admin {adminReplies.length === 1 ? "reply" : "replies"} — click to view
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              <PaginationControls
+                currentPage={feedbackPage}
+                totalPages={feedbackTotalPages}
+                totalItems={filteredFeedback.length}
+                startIndex={(feedbackPage - 1) * feedbackPageSize}
+                pageSize={feedbackPageSize}
+                onPageChange={setFeedbackPage}
+                pageSizeOptions={[10, 25, 50]}
+                onPageSizeChange={setFeedbackPageSize}
+              />
+            </>
           )}
         </TabsContent>
 
@@ -236,58 +275,70 @@ export default function FeedbackViews() {
           ) : filteredReports.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">No reports found.</div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {filteredReports.map(r => {
-                const isExpanded = expandedReport.has(r.id);
-                return (
-                  <Card key={r.id} className="border-border shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className="text-sm font-bold text-foreground">{r.report_title}</span>
-                            <Badge variant="outline" className={`text-[10px] ${statusColor(r.status || "New")}`}>
-                              {r.status || "New"}
-                            </Badge>
-                            {r.urgency_level && (
-                              <Badge variant="outline" className={`text-[10px] ${urgencyColor(r.urgency_level)}`}>
-                                {r.urgency_level}
+            <>
+              <div className="flex flex-col gap-3">
+                {paginatedReports.map(r => {
+                  const isExpanded = expandedReport.has(r.id);
+                  return (
+                    <Card key={r.id} className="border-border shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="text-sm font-bold text-foreground">{r.report_title}</span>
+                              <Badge variant="outline" className={`text-[10px] ${statusColor(r.status || "New")}`}>
+                                {r.status || "New"}
                               </Badge>
+                              {r.urgency_level && (
+                                <Badge variant="outline" className={`text-[10px] ${urgencyColor(r.urgency_level)}`}>
+                                  {r.urgency_level}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              {r.project_name && <span className="font-semibold text-foreground">{r.project_name} • </span>}
+                              {r.misconduct_type} • {r.sub_county || "N/A"} • {format(new Date(r.created_at), "dd MMM yyyy")}
+                            </p>
+                            {r.tracking_code && (
+                              <span className="text-[10px] text-muted-foreground font-mono">Tracking: {r.tracking_code}</span>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            {r.project_name && <span className="font-semibold text-foreground">{r.project_name} • </span>}
-                            {r.misconduct_type} • {r.sub_county || "N/A"} • {format(new Date(r.created_at), "dd MMM yyyy")}
-                          </p>
-                          {r.tracking_code && (
-                            <span className="text-[10px] text-muted-foreground font-mono">Tracking: {r.tracking_code}</span>
+                          {r.admin_reply && (
+                            <button onClick={() => toggleReport(r.id)} className="shrink-0 p-1 hover:bg-muted rounded">
+                              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
                           )}
                         </div>
-                        {r.admin_reply && (
-                          <button onClick={() => toggleReport(r.id)} className="shrink-0 p-1 hover:bg-muted rounded">
-                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                          </button>
-                        )}
-                      </div>
 
-                      {r.admin_reply && isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-border">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Admin Response</p>
-                          <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
-                            <p className="text-sm text-foreground">{r.admin_reply}</p>
+                        {r.admin_reply && isExpanded && (
+                          <div className="mt-3 pt-3 border-t border-border">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Admin Response</p>
+                            <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
+                              <p className="text-sm text-foreground">{r.admin_reply}</p>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      {r.admin_reply && !isExpanded && (
-                        <p className="mt-2 text-[10px] text-primary font-semibold cursor-pointer" onClick={() => toggleReport(r.id)}>
-                          Admin response available — click to view
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                        )}
+                        {r.admin_reply && !isExpanded && (
+                          <p className="mt-2 text-[10px] text-primary font-semibold cursor-pointer" onClick={() => toggleReport(r.id)}>
+                            Admin response available — click to view
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              <PaginationControls
+                currentPage={reportPage}
+                totalPages={reportTotalPages}
+                totalItems={filteredReports.length}
+                startIndex={(reportPage - 1) * reportPageSize}
+                pageSize={reportPageSize}
+                onPageChange={setReportPage}
+                pageSizeOptions={[10, 25, 50]}
+                onPageSizeChange={setReportPageSize}
+              />
+            </>
           )}
         </TabsContent>
       </Tabs>
