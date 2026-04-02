@@ -40,11 +40,22 @@ export default function FeedbackViews() {
         .select("*")
         .order("created_at", { ascending: true });
 
-      const { data: projects } = await supabase
-        .from("projects")
-        .select("id, name");
+      // Fetch all projects (paginated to bypass 1000 row limit)
+      let allProjects: { id: string; name: string }[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: batch } = await supabase
+          .from("projects")
+          .select("id, name")
+          .range(from, from + pageSize - 1);
+        if (!batch?.length) break;
+        allProjects = allProjects.concat(batch);
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
 
-      const projectMap = new Map((projects || []).map(p => [p.id, p.name]));
+      const projectMap = new Map(allProjects.map(p => [p.id, p.name]));
       const replyMap = new Map<string, typeof replies>();
       (replies || []).forEach(r => {
         const arr = replyMap.get(r.feedback_id) || [];
