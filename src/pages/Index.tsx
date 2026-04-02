@@ -34,6 +34,7 @@ const Index = () => {
   const [dateTime, setDateTime] = useState(new Date());
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const {
@@ -200,12 +201,21 @@ const Index = () => {
                   onChange={setFilters}
                   onReset={() => setFilters(defaultFilters)}
                 />
-                <ProjectsTable projects={filtered} isAdmin={isAdmin} />
+                <ProjectsTable 
+                  projects={filtered} 
+                  isAdmin={isAdmin} 
+                  highlightedId={highlightedProjectId}
+                  onHighlight={setHighlightedProjectId}
+                />
               </div>
             )}
 
             {activeTab === "location" && (
-              <ProjectLocationTab projects={filtered.length ? filtered : projects} />
+              <ProjectLocationTab 
+                projects={filtered.length ? filtered : projects} 
+                highlightedId={highlightedProjectId}
+                onHighlight={setHighlightedProjectId}
+              />
             )}
 
             {activeTab === "status" && (

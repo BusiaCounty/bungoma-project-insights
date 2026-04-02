@@ -26,18 +26,41 @@ import ProjectLocationMap from "./ProjectLocationMap";
 import PaginationControls from "./PaginationControls";
 interface ProjectLocationTabProps {
   projects: Project[];
+  highlightedId?: string | null;
+  onHighlight?: (id: string | null) => void;
 }
 
 export default function ProjectLocationTab({
   projects,
+  highlightedId: externalHighlightedId,
+  onHighlight,
 }: ProjectLocationTabProps) {
   const [search, setSearch] = useState("");
   const [filterSubCounty, setFilterSubCounty] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [internalHighlightedId, setInternalHighlightedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Use external highlightedId if provided, otherwise use internal state
+  const highlightedId = externalHighlightedId !== undefined ? externalHighlightedId : internalHighlightedId;
+  const setHighlightedId = (id: string | null | ((prev: string | null) => string | null)) => {
+    if (typeof id === 'function') {
+      const functionalUpdate = id as (prev: string | null) => string | null;
+      if (onHighlight) {
+        onHighlight(functionalUpdate(highlightedId));
+      } else {
+        setInternalHighlightedId(prev => functionalUpdate(prev));
+      }
+    } else {
+      if (onHighlight) {
+        onHighlight(id);
+      } else {
+        setInternalHighlightedId(id);
+      }
+    }
+  };
 
   const filtered = useMemo(() => {
     return projects.filter((p) => {
