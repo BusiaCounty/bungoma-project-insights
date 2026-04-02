@@ -169,20 +169,45 @@ export default function AdminFeedbackViewer() {
   };
 
   // Print
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    // Fetch replies for all filtered feedback
+    const feedbackWithReplies = await Promise.all(
+      filtered.map(async (f: any) => {
+        const replies = await fetchFeedbackReplies(f.id);
+        return { ...f, replies };
+      })
+    );
+
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-    const rows = filtered.map((f: any) => `
+    const rows = feedbackWithReplies.map((f: any) => {
+      const repliesHtml = f.replies?.length > 0
+        ? `<div style="margin-top:8px;padding-top:6px;border-top:1px dashed #ccc;font-size:11px;">
+            <strong>Replies:</strong>
+            ${f.replies.map((r: any) => `
+              <div style="margin:4px 0;padding:4px 8px;background:${r.is_admin ? '#e8f4fd' : '#f5f5f5'};border-radius:4px;">
+                <span style="font-weight:bold;color:${r.is_admin ? '#0066cc' : '#666'}">${r.author_name}${r.is_admin ? ' (Admin)' : ''}</span>
+                <span style="color:#999;font-size:10px;margin-left:8px">${new Date(r.created_at).toLocaleDateString("en-KE")}</span>
+                <p style="margin:2px 0 0 0;color:#333">${r.message}</p>
+              </div>
+            `).join('')}
+           </div>`
+        : '';
+      return `
       <tr>
         <td style="padding:6px;border:1px solid #ddd">${f.tracking_number || "-"}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.project_name || "N/A"}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.author_name || "Anonymous"}</td>
-        <td style="padding:6px;border:1px solid #ddd">${f.comment}</td>
+        <td style="padding:6px;border:1px solid #ddd">
+          <div>${f.comment}</div>
+          ${repliesHtml}
+        </td>
         <td style="padding:6px;border:1px solid #ddd">${f.rating ? "★".repeat(f.rating) : "-"}</td>
         <td style="padding:6px;border:1px solid #ddd">${f.status || "New"}</td>
         <td style="padding:6px;border:1px solid #ddd">${new Date(f.created_at).toLocaleDateString("en-KE")}</td>
       </tr>
-    `).join("");
+    `;
+    }).join("");
     printWindow.document.write(`
       <html><head><title>Feedback Report</title></head>
       <body style="font-family:sans-serif;padding:20px">
@@ -193,7 +218,7 @@ export default function AdminFeedbackViewer() {
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Tracking #</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Project</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Author</th>
-            <th style="padding:6px;border:1px solid #ddd;text-align:left">Comment</th>
+            <th style="padding:6px;border:1px solid #ddd;text-align:left">Comment & Replies</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Rating</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Status</th>
             <th style="padding:6px;border:1px solid #ddd;text-align:left">Date</th>
