@@ -57,10 +57,9 @@ const mapLayers = {
 function FitBounds({ projects, highlightedId }: { projects: Project[]; highlightedId?: string | null }) {
   const map = useMap();
   const hasFitted = useRef(false);
+  const projectsRef = useRef<Project[]>([]);
 
-  useEffect(() => {
-    // Only fit bounds once on initial load
-    if (hasFitted.current) return;
+  const fitMapToBounds = useCallback(() => {
     // Don't fit bounds if there's a highlighted project (let PanToHighlight handle it)
     if (highlightedId) return;
 
@@ -70,10 +69,40 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
 
     if (coords.length > 0) {
       const bounds = L.latLngBounds(coords.map(([lat, lng]) => L.latLng(lat, lng)));
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      
+      // Add extra padding to ensure markers don't touch edges
+      const padding: [number, number] = coords.length === 1 ? [100, 100] : [60, 60];
+      
+      // Use a more conservative maxZoom to prevent over-zooming
+      const maxZoom = coords.length === 1 ? 15 : 14;
+      
+      map.fitBounds(bounds, { 
+        padding, 
+        maxZoom,
+        animate: hasFitted.current // Only animate on subsequent fits
+      });
+      
       hasFitted.current = true;
     }
   }, [projects, map, highlightedId]);
+
+  useEffect(() => {
+    // Update projects ref for comparison
+    projectsRef.current = projects;
+    fitMapToBounds();
+  }, [fitMapToBounds]);
+
+  // Handle window resize to refit bounds
+  useEffect(() => {
+    const handleResize = () => {
+      if (!highlightedId && projectsRef.current.length > 0) {
+        setTimeout(fitMapToBounds, 100); // Small delay to ensure map has resized
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [fitMapToBounds, highlightedId]);
 
   return null;
 }
@@ -88,10 +117,16 @@ function PanToHighlight({
 }) {
   const map = useMap();
   const hasPanned = useRef(false);
+  const lastHighlightedId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!highlightedId) {
+    // Reset pan state when highlightedId changes
+    if (highlightedId !== lastHighlightedId.current) {
       hasPanned.current = false;
+      lastHighlightedId.current = highlightedId;
+    }
+
+    if (!highlightedId) {
       return;
     }
     
@@ -100,25 +135,24 @@ function PanToHighlight({
     
     const project = projects.find((p) => p.id === highlightedId);
     if (project && project.latitude != null && project.longitude != null) {
-      // Check if project is near the bounds edge
       const projectLatLng = L.latLng(project.latitude, project.longitude);
-      const bounds = map.getBounds();
-      const isNearEdge = 
-        (Math.abs(projectLatLng.lat - bounds.getSouth()) < 0.05 ||
-         Math.abs(projectLatLng.lat - bounds.getNorth()) < 0.05 ||
-         Math.abs(projectLatLng.lng - bounds.getWest()) < 0.05 ||
-         Math.abs(projectLatLng.lng - bounds.getEast()) < 0.05);
-
-      if (isNearEdge) {
-        // Use fitBounds for edge projects to stay within bounds
-        map.fitBounds([[project.latitude, project.longitude]], { padding: [50, 50], maxZoom: 13 });
-      } else {
-        // Use flyTo for normal projects
-        map.flyTo([project.latitude, project.longitude], 13, {
-          animate: true,
-          duration: 0.8,
-        });
-      }
+      
+      // Create a small bounds around the project to ensure it's well within view
+      const latOffset = 0.002; // ~200m
+      const lngOffset = 0.002; // ~200m
+      const projectBounds = L.latLngBounds([
+        [project.latitude - latOffset, project.longitude - lngOffset],
+        [project.latitude + latOffset, project.longitude + lngOffset]
+      ]);
+      
+      // Use fitBounds with generous padding to ensure the marker is never at the edge
+      map.fitBounds(projectBounds, { 
+        padding: [80, 80] as [number, number], 
+        maxZoom: 16,
+        animate: true,
+        duration: 0.8
+      });
+      
       hasPanned.current = true;
     }
   }, [highlightedId, projects, map]);
