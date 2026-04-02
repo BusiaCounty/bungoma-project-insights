@@ -100,10 +100,25 @@ function PanToHighlight({
     
     const project = projects.find((p) => p.id === highlightedId);
     if (project && project.latitude != null && project.longitude != null) {
-      map.flyTo([project.latitude, project.longitude], 13, {
-        animate: true,
-        duration: 0.8,
-      });
+      // Check if project is near the bounds edge
+      const projectLatLng = L.latLng(project.latitude, project.longitude);
+      const bounds = map.getBounds();
+      const isNearEdge = 
+        (Math.abs(projectLatLng.lat - bounds.getSouth()) < 0.05 ||
+         Math.abs(projectLatLng.lat - bounds.getNorth()) < 0.05 ||
+         Math.abs(projectLatLng.lng - bounds.getWest()) < 0.05 ||
+         Math.abs(projectLatLng.lng - bounds.getEast()) < 0.05);
+
+      if (isNearEdge) {
+        // Use fitBounds for edge projects to stay within bounds
+        map.fitBounds([[project.latitude, project.longitude]], { padding: [50, 50], maxZoom: 13 });
+      } else {
+        // Use flyTo for normal projects
+        map.flyTo([project.latitude, project.longitude], 13, {
+          animate: true,
+          duration: 0.8,
+        });
+      }
       hasPanned.current = true;
     }
   }, [highlightedId, projects, map]);
