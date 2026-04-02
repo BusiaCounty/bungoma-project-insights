@@ -57,9 +57,10 @@ const mapLayers = {
 function FitBounds({ projects, highlightedId }: { projects: Project[]; highlightedId?: string | null }) {
   const map = useMap();
   const hasFitted = useRef(false);
-  const projectsRef = useRef<Project[]>([]);
+  // Track the last set of project IDs so we can detect real changes
+  const lastProjectKeyRef = useRef<string>("");
 
-  const fitMapToBounds = useCallback(() => {
+  const fitMapToBounds = useCallback((animate: boolean) => {
     // Don't fit bounds if there's a highlighted project (let PanToHighlight handle it)
     if (highlightedId) return;
 
@@ -79,7 +80,7 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
       map.fitBounds(bounds, { 
         padding, 
         maxZoom,
-        animate: hasFitted.current // Only animate on subsequent fits
+        animate,
       });
       
       hasFitted.current = true;
@@ -87,22 +88,40 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
   }, [projects, map, highlightedId]);
 
   useEffect(() => {
-    // Update projects ref for comparison
-    projectsRef.current = projects;
-    fitMapToBounds();
-  }, [fitMapToBounds]);
+    // Build a stable key from the current project IDs to detect real set changes
+    const key = projects.map((p) => p.id).join(",");
+    const projectsChanged = key !== lastProjectKeyRef.current;
+    lastProjectKeyRef.current = key;
+
+    // Reset fitted state whenever the project set changes so the next fit
+    // doesn't animate from a stale previous position.
+    if (projectsChanged) {
+      hasFitted.current = false;
+    }
+
+    const shouldAnimate = hasFitted.current && !projectsChanged;
+
+    if (!hasFitted.current) {
+      // Defer the very first fit by one rAF so Leaflet's container has
+      // correct dimensions after the initial layout pass.
+      const rafId = requestAnimationFrame(() => fitMapToBounds(shouldAnimate));
+      return () => cancelAnimationFrame(rafId);
+    } else {
+      fitMapToBounds(shouldAnimate);
+    }
+  }, [fitMapToBounds, projects]);
 
   // Handle window resize to refit bounds
   useEffect(() => {
     const handleResize = () => {
-      if (!highlightedId && projectsRef.current.length > 0) {
-        setTimeout(fitMapToBounds, 100); // Small delay to ensure map has resized
+      if (!highlightedId && projects.length > 0) {
+        setTimeout(() => fitMapToBounds(false), 150);
       }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [fitMapToBounds, highlightedId]);
+  }, [fitMapToBounds, highlightedId, projects]);
 
   return null;
 }
@@ -135,8 +154,6 @@ function PanToHighlight({
     
     const project = projects.find((p) => p.id === highlightedId);
     if (project && project.latitude != null && project.longitude != null) {
-      const projectLatLng = L.latLng(project.latitude, project.longitude);
-      
       // Create a small bounds around the project to ensure it's well within view
       const latOffset = 0.002; // ~200m
       const lngOffset = 0.002; // ~200m
@@ -258,7 +275,7 @@ export default function ProjectLocationMap({
           minZoom={3}
         />
 
-        <FitBounds projects={projects} highlightedId={highlightedId} />
+        <FitBounds projects={mappableProjects} highlightedId={highlightedId} />
         <PanToHighlight highlightedId={highlightedId ?? null} projects={mappableProjects} />
 
         {mappableProjects.map((project) => (
