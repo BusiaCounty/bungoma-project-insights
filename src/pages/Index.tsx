@@ -14,6 +14,7 @@ import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
 import CommitteeModule from "@/components/dashboard/CommitteeModule";
 import ProjectLocationTab from "@/components/dashboard/ProjectLocationTab";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
+import FeedbackViews from "@/components/dashboard/FeedbackViews";
 import FinancialSummary from "@/components/dashboard/FinancialSummary";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -78,6 +79,7 @@ const Index = () => {
     financials: "Financials",
     committee: "PMC",
     whistleblower: "Report",
+    "feedback-views": "Feedback",
   };
 
   return (
@@ -106,6 +108,7 @@ const Index = () => {
             "financials",
             "committee",
             "whistleblower",
+            "feedback-views",
           ] as TabId[]
         ).map((t) => (
           <button
@@ -232,6 +235,8 @@ const Index = () => {
             )}
 
             {activeTab === "whistleblower" && <WhistleblowerForm />}
+
+            {activeTab === "feedback-views" && <FeedbackViews />}
           </>
         )}
       </div>

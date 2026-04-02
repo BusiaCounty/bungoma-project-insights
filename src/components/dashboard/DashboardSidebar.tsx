@@ -7,6 +7,7 @@ import {
   LogIn,
   LogOut,
   ShieldCheck,
+  Eye,
   Users,
   Banknote,
   ChevronLeft,
@@ -20,7 +21,8 @@ export type TabId =
   | "status"
   | "financials"
   | "committee"
-  | "whistleblower";
+  | "whistleblower"
+  | "feedback-views";
 
 interface DashboardSidebarProps {
   activeTab: TabId;
@@ -80,6 +82,12 @@ const tabs: {
     title: "Whistleblower Report",
     sub: "Confidential reports",
     icon: ShieldAlert,
+  },
+  {
+    id: "feedback-views",
+    title: "Feedback Views",
+    sub: "Reports & responses",
+    icon: Eye,
   },
 ];
 
