@@ -100,7 +100,7 @@ function PanToHighlight({
     
     const project = projects.find((p) => p.id === highlightedId);
     if (project && project.latitude != null && project.longitude != null) {
-      map.setView([project.latitude, project.longitude], 15, {
+      map.flyTo([project.latitude, project.longitude], 13, {
         animate: true,
         duration: 0.8,
       });
