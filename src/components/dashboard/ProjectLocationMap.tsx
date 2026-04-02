@@ -59,10 +59,13 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
   const hasFitted = useRef(false);
   // Track the last set of project IDs so we can detect real changes
   const lastProjectKeyRef = useRef<string>("");
+  // Use a ref for highlightedId so it doesn't cause effect/callback re-runs
+  const highlightedIdRef = useRef(highlightedId);
+  highlightedIdRef.current = highlightedId;
 
   const fitMapToBounds = useCallback((animate: boolean) => {
     // Don't fit bounds if there's a highlighted project (let PanToHighlight handle it)
-    if (highlightedId) return;
+    if (highlightedIdRef.current) return;
 
     const coords = projects
       .filter((p) => p.latitude != null && p.longitude != null)
@@ -85,7 +88,7 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
       
       hasFitted.current = true;
     }
-  }, [projects, map, highlightedId]);
+  }, [projects, map]);
 
   useEffect(() => {
     // Build a stable key from the current project IDs to detect real set changes
@@ -114,14 +117,14 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
   // Handle window resize to refit bounds
   useEffect(() => {
     const handleResize = () => {
-      if (!highlightedId && projects.length > 0) {
+      if (!highlightedIdRef.current && projects.length > 0) {
         setTimeout(() => fitMapToBounds(false), 150);
       }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [fitMapToBounds, highlightedId, projects]);
+  }, [fitMapToBounds, projects]);
 
   return null;
 }
