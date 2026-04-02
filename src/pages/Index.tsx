@@ -108,6 +108,7 @@ const Index = () => {
             "financials",
             "committee",
             "whistleblower",
+            "feedback-views",
           ] as TabId[]
         ).map((t) => (
           <button
