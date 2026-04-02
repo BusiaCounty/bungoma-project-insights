@@ -14,6 +14,7 @@ import WhistleblowerForm from "@/components/dashboard/WhistleblowerForm";
 import CommitteeModule from "@/components/dashboard/CommitteeModule";
 import ProjectLocationTab from "@/components/dashboard/ProjectLocationTab";
 import AdminLoginModal from "@/components/dashboard/AdminLoginModal";
+import FeedbackViews from "@/components/dashboard/FeedbackViews";
 import FinancialSummary from "@/components/dashboard/FinancialSummary";
 import { fetchProjects } from "@/data/projects";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
