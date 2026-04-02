@@ -245,6 +245,7 @@ export default function FeedbackViews() {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mb-1">
+                            {r.project_name && <span className="font-semibold text-foreground">{r.project_name} • </span>}
                             {r.misconduct_type} • {r.sub_county || "N/A"} • {format(new Date(r.created_at), "dd MMM yyyy")}
                           </p>
                           {r.tracking_code && (
