@@ -174,7 +174,7 @@ export default function FeedbackViews() {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mb-1">
-                            {f.project_name} • {format(new Date(f.created_at), "dd MMM yyyy")}
+                            <span className="font-semibold text-foreground">Project: {f.project_name}</span> • {format(new Date(f.created_at), "dd MMM yyyy")}
                           </p>
                           {f.rating && (
                             <div className="flex items-center gap-0.5 mb-2">
