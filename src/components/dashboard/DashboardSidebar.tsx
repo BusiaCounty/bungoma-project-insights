@@ -83,6 +83,12 @@ const tabs: {
     sub: "Confidential reports",
     icon: ShieldAlert,
   },
+  {
+    id: "feedback-views",
+    title: "Feedback Views",
+    sub: "Reports & responses",
+    icon: Eye,
+  },
 ];
 
 const DashboardSidebar = ({

@@ -235,6 +235,8 @@ const Index = () => {
             )}
 
             {activeTab === "whistleblower" && <WhistleblowerForm />}
+
+            {activeTab === "feedback-views" && <FeedbackViews />}
           </>
         )}
       </div>
