@@ -142,8 +142,8 @@ const Index = () => {
         {/* Header */}
         <div className="gradient-hero rounded-xl p-5 border border-border shadow-card flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-3 items-center">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
-              <Calendar className="w-6 h-6 text-primary-foreground" />
+            <div className="w-14 h-14 rounded-xl bg-white p-1 flex items-center justify-center shadow-md animate-in zoom-in duration-500">
+              <img src="/logo.png" alt="Busia County Logo" className="w-full h-full object-contain drop-shadow-sm" />
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-foreground tracking-tight">
