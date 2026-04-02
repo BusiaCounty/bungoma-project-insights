@@ -68,7 +68,7 @@ export default function FeedbackViews() {
       // RPC won't work for listing all - use direct select (public can read via RLS)
       const res = await supabase
         .from("whistleblower_reports")
-        .select("id, report_title, misconduct_type, urgency_level, status, admin_reply, created_at, tracking_code, sub_county")
+        .select("id, report_title, misconduct_type, urgency_level, status, admin_reply, created_at, tracking_code, sub_county, project_name")
         .order("created_at", { ascending: false });
       if (res.error) throw res.error;
       return res.data || [];
