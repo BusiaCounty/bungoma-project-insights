@@ -7,6 +7,7 @@ import {
   LogIn,
   LogOut,
   ShieldCheck,
+  Eye,
   Users,
   Banknote,
   ChevronLeft,
