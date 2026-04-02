@@ -68,7 +68,7 @@ export default function FeedbackViews() {
       // RPC won't work for listing all - use direct select (public can read via RLS)
       const res = await supabase
         .from("whistleblower_reports")
-        .select("id, report_title, misconduct_type, urgency_level, status, admin_reply, created_at, tracking_code, sub_county")
+        .select("id, report_title, misconduct_type, urgency_level, status, admin_reply, created_at, tracking_code, sub_county, project_name")
         .order("created_at", { ascending: false });
       if (res.error) throw res.error;
       return res.data || [];
@@ -174,7 +174,7 @@ export default function FeedbackViews() {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mb-1">
-                            {f.project_name} • {format(new Date(f.created_at), "dd MMM yyyy")}
+                            <span className="font-semibold text-foreground">Project: {f.project_name}</span> • {format(new Date(f.created_at), "dd MMM yyyy")}
                           </p>
                           {f.rating && (
                             <div className="flex items-center gap-0.5 mb-2">
@@ -245,6 +245,7 @@ export default function FeedbackViews() {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mb-1">
+                            {r.project_name && <span className="font-semibold text-foreground">{r.project_name} • </span>}
                             {r.misconduct_type} • {r.sub_county || "N/A"} • {format(new Date(r.created_at), "dd MMM yyyy")}
                           </p>
                           {r.tracking_code && (
