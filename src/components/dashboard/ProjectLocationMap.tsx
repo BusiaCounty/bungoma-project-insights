@@ -157,20 +157,10 @@ function PanToHighlight({
     
     const project = projects.find((p) => p.id === highlightedId);
     if (project && project.latitude != null && project.longitude != null) {
-      // Create a small bounds around the project to ensure it's well within view
-      const latOffset = 0.002; // ~200m
-      const lngOffset = 0.002; // ~200m
-      const projectBounds = L.latLngBounds([
-        [project.latitude - latOffset, project.longitude - lngOffset],
-        [project.latitude + latOffset, project.longitude + lngOffset]
-      ]);
-      
-      // Use fitBounds with generous padding to ensure the marker is never at the edge
-      map.fitBounds(projectBounds, { 
-        padding: [80, 80] as [number, number], 
-        maxZoom: 16,
+      // Pan to the project without changing zoom level
+      map.panTo([project.latitude, project.longitude], {
         animate: true,
-        duration: 0.8
+        duration: 0.8,
       });
       
       hasPanned.current = true;
