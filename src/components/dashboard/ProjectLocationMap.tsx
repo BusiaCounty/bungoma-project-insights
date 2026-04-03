@@ -188,33 +188,14 @@ function ZoomToButton({ lat, lng }: { lat: number; lng: number }) {
   );
 }
 
-// Fit-all button to reset map view to show all projects
-function FitAllButton({ projects }: { projects: Project[] }) {
+// Helper component inside MapContainer that captures the map ref
+function MapRefCapture({ mapRefCallback }: { mapRefCallback: (map: L.Map) => void }) {
   const map = useMap();
-  const handleClick = () => {
-    const coords = projects
-      .filter((p) => p.latitude != null && p.longitude != null)
-      .map((p) => [p.latitude!, p.longitude!] as [number, number]);
-    if (coords.length > 0) {
-      const bounds = L.latLngBounds(coords.map(([lat, lng]) => L.latLng(lat, lng)));
-      const padding: [number, number] = coords.length === 1 ? [100, 100] : [60, 60];
-      const maxZoom = coords.length === 1 ? 15 : 14;
-      map.flyToBounds(bounds, { padding, maxZoom, animate: true, duration: 1 });
-    }
-  };
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-lg hover:bg-accent transition-colors cursor-pointer"
-      title="Show all projects"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
-      Fit all
-    </button>
-  );
+  useEffect(() => {
+    mapRefCallback(map);
+  }, [map, mapRefCallback]);
+  return null;
 }
-
 
 interface ProjectLocationMapProps {
   projects: Project[];
