@@ -12,8 +12,6 @@ import PaginationControls from "./PaginationControls";
 interface ProjectsTableProps {
   projects: Project[];
   isAdmin?: boolean;
-  highlightedId?: string | null;
-  onHighlight?: (id: string | null) => void;
 }
 
 const statusClass: Record<string, string> = {
@@ -30,7 +28,7 @@ type ModalState =
 
 const PAGE_SIZE_OPTIONS = [10, 15, 25, 50];
 
-const ProjectsTable = ({ projects, isAdmin = false, highlightedId, onHighlight }: ProjectsTableProps) => {
+const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<ModalState>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -182,11 +180,7 @@ const ProjectsTable = ({ projects, isAdmin = false, highlightedId, onHighlight }
                 <>
                   <tr
                     key={p.id}
-                    className={`border-b border-border/50 transition-colors ${
-                      highlightedId === p.id 
-                        ? "bg-primary/10 ring-1 ring-inset ring-primary/20" 
-                        : "hover:bg-muted/30"
-                    }`}
+                    className="border-b border-border/50 hover:bg-muted/30 transition-colors"
                   >
                     <td className="px-3 py-2 text-muted-foreground">
                       {startIndex + i + 1}
@@ -252,16 +246,6 @@ const ProjectsTable = ({ projects, isAdmin = false, highlightedId, onHighlight }
                           className="text-[11px] font-semibold text-primary hover:underline"
                         >
                           {expandedId === p.id ? "Hide" : "Quick"}
-                        </button>
-                        <span className="text-muted-foreground">•</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            onHighlight?.(highlightedId === p.id ? null : p.id)
-                          }
-                          className="text-[11px] font-semibold text-primary hover:underline"
-                        >
-                          {highlightedId === p.id ? "Unhighlight" : "Highlight"}
                         </button>
                       </div>
                     </td>
