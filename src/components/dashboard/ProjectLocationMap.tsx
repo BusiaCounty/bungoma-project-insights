@@ -189,6 +189,7 @@ function ZoomToButton({ lat, lng }: { lat: number; lng: number }) {
 }
 
 
+interface ProjectLocationMapProps {
   projects: Project[];
   onProjectClick?: (project: Project) => void;
   highlightedId?: string | null;
