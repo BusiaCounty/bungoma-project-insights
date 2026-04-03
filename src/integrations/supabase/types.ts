@@ -208,30 +208,42 @@ export type Database = {
       }
       project_feedback: {
         Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          assigned_to: string | null
           author_name: string
           comment: string
           created_at: string
           id: string
+          internal_note: string | null
           project_id: string | null
           rating: number | null
           status: string
           tracking_number: string | null
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           author_name?: string
           comment: string
           created_at?: string
           id?: string
+          internal_note?: string | null
           project_id?: string | null
           rating?: number | null
           status?: string
           tracking_number?: string | null
         }
         Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           author_name?: string
           comment?: string
           created_at?: string
           id?: string
+          internal_note?: string | null
           project_id?: string | null
           rating?: number | null
           status?: string
