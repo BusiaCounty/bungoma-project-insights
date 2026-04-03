@@ -306,7 +306,7 @@ export default function ProjectLocationMap({
 
         <FitBounds projects={mappableProjects} highlightedId={highlightedId} />
         <PanToHighlight highlightedId={highlightedId ?? null} projects={mappableProjects} />
-        <FitAllButton projects={mappableProjects} />
+        <MapRefCapture mapRefCallback={setMapRef} />
 
         {mappableProjects.map((project) => (
           <Marker
