@@ -10,12 +10,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Search, Star, MessageSquare, Loader2, Download, Printer,
-  MessageCircle, ChevronRight, Send, FileSpreadsheet,
+  MessageCircle, ChevronRight, Send, FileSpreadsheet, Forward, UserCheck, X, StickyNote,
 } from "lucide-react";
-import { fetchFeedback, updateFeedbackStatus, fetchFeedbackReplies, submitFeedbackReply } from "@/data/projects";
+import { fetchFeedback, updateFeedbackStatus, fetchFeedbackReplies, submitFeedbackReply, fetchSystemUsers, assignFeedback, unassignFeedback } from "@/data/projects";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "@/components/dashboard/PaginationControls";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const FEEDBACK_STATUSES = ["New", "Under Review", "In Progress", "Resolved"] as const;
 
