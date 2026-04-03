@@ -309,6 +309,7 @@ export default function ProjectLocationMap({
 
         <FitBounds projects={mappableProjects} highlightedId={highlightedId} />
         <PanToHighlight highlightedId={highlightedId ?? null} projects={mappableProjects} />
+        <FitAllButton projects={mappableProjects} />
 
         {mappableProjects.map((project) => (
           <Marker
