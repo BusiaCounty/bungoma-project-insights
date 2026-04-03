@@ -313,6 +313,42 @@ export async function fetchFeedback(projectId?: string) {
   }));
 }
 
+export async function fetchSystemUsers() {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, department, status")
+    .eq("status", "Active")
+    .order("full_name");
+  if (error) throw error;
+  return data || [];
+}
+
+export async function assignFeedback(feedbackId: string, assignedTo: string, internalNote: string, assignedBy: string) {
+  const { error } = await supabase
+    .from("project_feedback")
+    .update({
+      assigned_to: assignedTo,
+      internal_note: internalNote || null,
+      assigned_by: assignedBy,
+      assigned_at: new Date().toISOString(),
+    } as any)
+    .eq("id", feedbackId);
+  if (error) throw error;
+}
+
+export async function unassignFeedback(feedbackId: string) {
+  const { error } = await supabase
+    .from("project_feedback")
+    .update({
+      assigned_to: null,
+      internal_note: null,
+      assigned_by: null,
+      assigned_at: null,
+    } as any)
+    .eq("id", feedbackId);
+  if (error) throw error;
+}
+
 export async function updateFeedbackStatus(feedbackId: string, status: string) {
   const { error } = await supabase
     .from("project_feedback")

@@ -10,12 +10,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Search, Star, MessageSquare, Loader2, Download, Printer,
-  MessageCircle, ChevronRight, Send, FileSpreadsheet,
+  MessageCircle, ChevronRight, Send, FileSpreadsheet, Forward, UserCheck, X, StickyNote,
 } from "lucide-react";
-import { fetchFeedback, updateFeedbackStatus, fetchFeedbackReplies, submitFeedbackReply } from "@/data/projects";
+import { fetchFeedback, updateFeedbackStatus, fetchFeedbackReplies, submitFeedbackReply, fetchSystemUsers, assignFeedback, unassignFeedback } from "@/data/projects";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "@/components/dashboard/PaginationControls";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const FEEDBACK_STATUSES = ["New", "Under Review", "In Progress", "Resolved"] as const;
 
@@ -105,11 +106,19 @@ export default function AdminFeedbackViewer() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null);
+  const [showForwardPanel, setShowForwardPanel] = useState(false);
+  const [forwardUserId, setForwardUserId] = useState<string>("");
+  const [forwardNote, setForwardNote] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: feedback = [], isLoading } = useQuery({
     queryKey: ["admin-feedback"],
     queryFn: () => fetchFeedback(),
+  });
+
+  const { data: systemUsers = [] } = useQuery({
+    queryKey: ["system-users"],
+    queryFn: () => fetchSystemUsers(),
   });
 
   const { mutate: changeStatus } = useMutation({
@@ -119,6 +128,34 @@ export default function AdminFeedbackViewer() {
       toast({ title: "Status updated" });
     },
     onError: () => toast({ title: "Failed to update status", variant: "destructive" }),
+  });
+
+  const { mutate: doAssign, isPending: isAssigning } = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      await assignFeedback(selectedFeedback.id, forwardUserId, forwardNote, user.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      const assignedUser = systemUsers.find((u: any) => u.id === forwardUserId);
+      toast({ title: `Forwarded to ${assignedUser?.full_name || "user"}` });
+      setShowForwardPanel(false);
+      setForwardUserId("");
+      setForwardNote("");
+      setSelectedFeedback((prev: any) => prev ? { ...prev, assigned_to: forwardUserId, internal_note: forwardNote } : null);
+    },
+    onError: () => toast({ title: "Failed to forward feedback", variant: "destructive" }),
+  });
+
+  const { mutate: doUnassign } = useMutation({
+    mutationFn: () => unassignFeedback(selectedFeedback.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      toast({ title: "Assignment removed" });
+      setSelectedFeedback((prev: any) => prev ? { ...prev, assigned_to: null, internal_note: null } : null);
+    },
+    onError: () => toast({ title: "Failed to remove assignment", variant: "destructive" }),
   });
 
   const filtered = feedback.filter((f: any) => {
@@ -337,6 +374,7 @@ export default function AdminFeedbackViewer() {
                       <TableHead>Comment</TableHead>
                       <TableHead>Rating</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Assigned To</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="w-8"></TableHead>
                     </TableRow>
@@ -344,7 +382,7 @@ export default function AdminFeedbackViewer() {
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center h-24 text-muted-foreground">
                           No feedback found.
                         </TableCell>
                       </TableRow>
@@ -384,6 +422,16 @@ export default function AdminFeedbackViewer() {
                               {item.status || "New"}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            {item.assigned_to ? (
+                              <Badge variant="outline" className="text-[10px] gap-1">
+                                <UserCheck className="w-3 h-3" />
+                                {systemUsers.find((u: any) => u.id === item.assigned_to)?.full_name || "User"}
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
                           <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                             {new Date(item.created_at).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
                           </TableCell>
@@ -410,7 +458,7 @@ export default function AdminFeedbackViewer() {
       </Card>
 
       {/* Detail Dialog */}
-      <Dialog open={!!selectedFeedback} onOpenChange={(open) => !open && setSelectedFeedback(null)}>
+      <Dialog open={!!selectedFeedback} onOpenChange={(open) => { if (!open) { setSelectedFeedback(null); setShowForwardPanel(false); setForwardUserId(""); setForwardNote(""); } }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -473,6 +521,90 @@ export default function AdminFeedbackViewer() {
                 </Select>
               </div>
 
+              {/* Assignment / Forward Section */}
+              <div className="border border-border rounded-lg p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    <Forward className="w-4 h-4" /> Forward to User
+                  </h4>
+                  {selectedFeedback.assigned_to && !showForwardPanel && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive" onClick={() => doUnassign()}>
+                      <X className="w-3 h-3 mr-1" /> Remove
+                    </Button>
+                  )}
+                </div>
+
+                {selectedFeedback.assigned_to && !showForwardPanel ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 bg-muted/40 rounded-md px-3 py-2">
+                      <UserCheck className="w-4 h-4 text-primary" />
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-foreground">
+                          {systemUsers.find((u: any) => u.id === selectedFeedback.assigned_to)?.full_name || "Assigned User"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {systemUsers.find((u: any) => u.id === selectedFeedback.assigned_to)?.department || ""}
+                          {" · "}
+                          {systemUsers.find((u: any) => u.id === selectedFeedback.assigned_to)?.email || ""}
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
+                        setForwardUserId(selectedFeedback.assigned_to);
+                        setForwardNote(selectedFeedback.internal_note || "");
+                        setShowForwardPanel(true);
+                      }}>
+                        Reassign
+                      </Button>
+                    </div>
+                    {selectedFeedback.internal_note && (
+                      <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-md px-3 py-2">
+                        <StickyNote className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                        <p className="text-xs text-amber-800 dark:text-amber-300">{selectedFeedback.internal_note}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : showForwardPanel ? (
+                  <div className="space-y-3">
+                    <Select value={forwardUserId} onValueChange={setForwardUserId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a user to forward to..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {systemUsers.map((u: any) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            <span className="font-medium">{u.full_name || u.email}</span>
+                            {u.department && <span className="text-muted-foreground ml-1">· {u.department}</span>}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Textarea
+                      value={forwardNote}
+                      onChange={(e) => setForwardNote(e.target.value)}
+                      placeholder="Internal note (optional) — only visible to staff, not to the citizen..."
+                      className="text-xs min-h-[50px]"
+                      rows={2}
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setShowForwardPanel(false);
+                        setForwardUserId("");
+                        setForwardNote("");
+                      }}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" disabled={!forwardUserId || isAssigning} onClick={() => doAssign()}>
+                        {isAssigning ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Forward className="w-3.5 h-3.5 mr-1" />}
+                        Forward
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowForwardPanel(true)}>
+                    <Forward className="w-3.5 h-3.5 mr-1.5" /> Forward this feedback to a user
+                  </Button>
+                )}
+              </div>
               {/* Thread */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
