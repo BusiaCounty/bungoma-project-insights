@@ -422,6 +422,15 @@ export default function AdminFeedbackViewer() {
                               {item.status || "New"}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            {item.assigned_to ? (
+                              <Badge variant="outline" className="text-[10px] gap-1">
+                                <UserCheck className="w-3 h-3" />
+                                {systemUsers.find((u: any) => u.id === item.assigned_to)?.full_name || "User"}
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
                           <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                             {new Date(item.created_at).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
                           </TableCell>
