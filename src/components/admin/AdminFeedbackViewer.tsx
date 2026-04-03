@@ -510,6 +510,90 @@ export default function AdminFeedbackViewer() {
                 </Select>
               </div>
 
+              {/* Assignment / Forward Section */}
+              <div className="border border-border rounded-lg p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    <Forward className="w-4 h-4" /> Forward to User
+                  </h4>
+                  {selectedFeedback.assigned_to && !showForwardPanel && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive" onClick={() => doUnassign()}>
+                      <X className="w-3 h-3 mr-1" /> Remove
+                    </Button>
+                  )}
+                </div>
+
+                {selectedFeedback.assigned_to && !showForwardPanel ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 bg-muted/40 rounded-md px-3 py-2">
+                      <UserCheck className="w-4 h-4 text-primary" />
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-foreground">
+                          {systemUsers.find((u: any) => u.id === selectedFeedback.assigned_to)?.full_name || "Assigned User"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {systemUsers.find((u: any) => u.id === selectedFeedback.assigned_to)?.department || ""}
+                          {" · "}
+                          {systemUsers.find((u: any) => u.id === selectedFeedback.assigned_to)?.email || ""}
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
+                        setForwardUserId(selectedFeedback.assigned_to);
+                        setForwardNote(selectedFeedback.internal_note || "");
+                        setShowForwardPanel(true);
+                      }}>
+                        Reassign
+                      </Button>
+                    </div>
+                    {selectedFeedback.internal_note && (
+                      <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-md px-3 py-2">
+                        <StickyNote className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                        <p className="text-xs text-amber-800 dark:text-amber-300">{selectedFeedback.internal_note}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : showForwardPanel ? (
+                  <div className="space-y-3">
+                    <Select value={forwardUserId} onValueChange={setForwardUserId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a user to forward to..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {systemUsers.map((u: any) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            <span className="font-medium">{u.full_name || u.email}</span>
+                            {u.department && <span className="text-muted-foreground ml-1">· {u.department}</span>}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Textarea
+                      value={forwardNote}
+                      onChange={(e) => setForwardNote(e.target.value)}
+                      placeholder="Internal note (optional) — only visible to staff, not to the citizen..."
+                      className="text-xs min-h-[50px]"
+                      rows={2}
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setShowForwardPanel(false);
+                        setForwardUserId("");
+                        setForwardNote("");
+                      }}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" disabled={!forwardUserId || isAssigning} onClick={() => doAssign()}>
+                        {isAssigning ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Forward className="w-3.5 h-3.5 mr-1" />}
+                        Forward
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowForwardPanel(true)}>
+                    <Forward className="w-3.5 h-3.5 mr-1.5" /> Forward this feedback to a user
+                  </Button>
+                )}
+
               {/* Thread */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
