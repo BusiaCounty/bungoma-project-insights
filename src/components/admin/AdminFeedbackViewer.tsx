@@ -458,7 +458,7 @@ export default function AdminFeedbackViewer() {
       </Card>
 
       {/* Detail Dialog */}
-      <Dialog open={!!selectedFeedback} onOpenChange={(open) => !open && setSelectedFeedback(null)}>
+      <Dialog open={!!selectedFeedback} onOpenChange={(open) => { if (!open) { setSelectedFeedback(null); setShowForwardPanel(false); setForwardUserId(""); setForwardNote(""); } }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
