@@ -116,6 +116,11 @@ export default function AdminFeedbackViewer() {
     queryFn: () => fetchFeedback(),
   });
 
+  const { data: systemUsers = [] } = useQuery({
+    queryKey: ["system-users"],
+    queryFn: () => fetchSystemUsers(),
+  });
+
   const { mutate: changeStatus } = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => updateFeedbackStatus(id, status),
     onSuccess: () => {
@@ -123,6 +128,34 @@ export default function AdminFeedbackViewer() {
       toast({ title: "Status updated" });
     },
     onError: () => toast({ title: "Failed to update status", variant: "destructive" }),
+  });
+
+  const { mutate: doAssign, isPending: isAssigning } = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      await assignFeedback(selectedFeedback.id, forwardUserId, forwardNote, user.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      const assignedUser = systemUsers.find((u: any) => u.id === forwardUserId);
+      toast({ title: `Forwarded to ${assignedUser?.full_name || "user"}` });
+      setShowForwardPanel(false);
+      setForwardUserId("");
+      setForwardNote("");
+      setSelectedFeedback((prev: any) => prev ? { ...prev, assigned_to: forwardUserId, internal_note: forwardNote } : null);
+    },
+    onError: () => toast({ title: "Failed to forward feedback", variant: "destructive" }),
+  });
+
+  const { mutate: doUnassign } = useMutation({
+    mutationFn: () => unassignFeedback(selectedFeedback.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      toast({ title: "Assignment removed" });
+      setSelectedFeedback((prev: any) => prev ? { ...prev, assigned_to: null, internal_note: null } : null);
+    },
+    onError: () => toast({ title: "Failed to remove assignment", variant: "destructive" }),
   });
 
   const filtered = feedback.filter((f: any) => {
