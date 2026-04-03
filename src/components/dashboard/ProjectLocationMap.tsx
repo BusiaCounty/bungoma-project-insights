@@ -157,20 +157,10 @@ function PanToHighlight({
     
     const project = projects.find((p) => p.id === highlightedId);
     if (project && project.latitude != null && project.longitude != null) {
-      // Create a small bounds around the project to ensure it's well within view
-      const latOffset = 0.002; // ~200m
-      const lngOffset = 0.002; // ~200m
-      const projectBounds = L.latLngBounds([
-        [project.latitude - latOffset, project.longitude - lngOffset],
-        [project.latitude + latOffset, project.longitude + lngOffset]
-      ]);
-      
-      // Use fitBounds with generous padding to ensure the marker is never at the edge
-      map.fitBounds(projectBounds, { 
-        padding: [80, 80] as [number, number], 
-        maxZoom: 16,
+      // Pan to the project without changing zoom level
+      map.panTo([project.latitude, project.longitude], {
         animate: true,
-        duration: 0.8
+        duration: 0.8,
       });
       
       hasPanned.current = true;
@@ -203,12 +193,6 @@ export default function ProjectLocationMap({
   // Busia County center coordinates
   const defaultCenter: [number, number] = [0.4608, 34.1115];
   const defaultZoom = 11;
-
-  // Busia County bounding box for soft geographical limit
-  const busiaBounds: [[number, number], [number, number]] = [
-    [0.3, 33.9],   // Southwest corner
-    [0.65, 34.5]   // Northeast corner
-  ];
 
   const statusColor = (s: string) => {
     if (s === "Completed") return "bg-emerald-500/15 text-emerald-600 border-emerald-200";
@@ -266,8 +250,6 @@ export default function ProjectLocationMap({
         center={defaultCenter}
         zoom={defaultZoom}
         scrollWheelZoom={true}
-        maxBounds={busiaBounds}
-        maxBoundsViscosity={0.5}
         className="w-full h-full min-h-[500px]"
         style={{ background: "#f8f9fa" }}
       >
