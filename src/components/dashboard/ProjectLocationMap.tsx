@@ -303,6 +303,7 @@ export default function ProjectLocationMap({
         </button>
       </div>
 
+      <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
         scrollWheelZoom={true}
