@@ -374,6 +374,7 @@ export default function AdminFeedbackViewer() {
                       <TableHead>Comment</TableHead>
                       <TableHead>Rating</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Assigned To</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="w-8"></TableHead>
                     </TableRow>
