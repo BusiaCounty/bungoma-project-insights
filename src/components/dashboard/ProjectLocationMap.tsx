@@ -337,6 +337,7 @@ export default function ProjectLocationMap({
                     }}
                   />
                 </div>
+                <ZoomToButton lat={project.latitude!} lng={project.longitude!} />
               </div>
             </Popup>
           </Marker>
