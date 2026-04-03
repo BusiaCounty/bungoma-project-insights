@@ -204,12 +204,6 @@ export default function ProjectLocationMap({
   const defaultCenter: [number, number] = [0.4608, 34.1115];
   const defaultZoom = 11;
 
-  // Busia County bounding box for soft geographical limit
-  const busiaBounds: [[number, number], [number, number]] = [
-    [0.3, 33.9],   // Southwest corner
-    [0.65, 34.5]   // Northeast corner
-  ];
-
   const statusColor = (s: string) => {
     if (s === "Completed") return "bg-emerald-500/15 text-emerald-600 border-emerald-200";
     if (s === "Ongoing") return "bg-blue-500/15 text-blue-600 border-blue-200";
