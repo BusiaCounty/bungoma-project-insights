@@ -290,7 +290,19 @@ export default function ProjectLocationMap({
         </div>
       </div>
 
-      <MapContainer
+      {/* Fit all button */}
+      <div className="absolute bottom-3 left-3 z-[1000]">
+        <button
+          type="button"
+          onClick={handleFitAll}
+          className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-lg hover:bg-accent transition-colors cursor-pointer"
+          title="Show all projects"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+          Fit all
+        </button>
+      </div>
+
         center={defaultCenter}
         zoom={defaultZoom}
         scrollWheelZoom={true}
