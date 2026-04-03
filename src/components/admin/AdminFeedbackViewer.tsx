@@ -593,7 +593,7 @@ export default function AdminFeedbackViewer() {
                     <Forward className="w-3.5 h-3.5 mr-1.5" /> Forward this feedback to a user
                   </Button>
                 )}
-
+              </div>
               {/* Thread */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
