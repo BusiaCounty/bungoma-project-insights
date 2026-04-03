@@ -211,6 +211,22 @@ export default function ProjectLocationMap({
   className = "",
 }: ProjectLocationMapProps) {
   const [selectedLayer, setSelectedLayer] = useState<keyof typeof mapLayers>("detailed");
+  const mapRef = useRef<L.Map | null>(null);
+  const setMapRef = useCallback((map: L.Map) => { mapRef.current = map; }, []);
+
+  const handleFitAll = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const coords = projects
+      .filter((p) => p.latitude != null && p.longitude != null)
+      .map((p) => [p.latitude!, p.longitude!] as [number, number]);
+    if (coords.length > 0) {
+      const bounds = L.latLngBounds(coords.map(([lat, lng]) => L.latLng(lat, lng)));
+      const padding: [number, number] = coords.length === 1 ? [100, 100] : [60, 60];
+      const maxZoom = coords.length === 1 ? 15 : 14;
+      map.flyToBounds(bounds, { padding, maxZoom, animate: true, duration: 1 });
+    }
+  }, [projects]);
   
   // Only show projects with valid coordinates
   const mappableProjects = projects.filter(
