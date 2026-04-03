@@ -382,7 +382,7 @@ export default function AdminFeedbackViewer() {
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center h-24 text-muted-foreground">
                           No feedback found.
                         </TableCell>
                       </TableRow>
