@@ -273,6 +273,11 @@ export default function ProjectLocationMap({
         </p>
       </div>
 
+      {/* Fit all button */}
+      <div className="absolute bottom-3 left-3 z-[1000]">
+        <FitAllButton projects={mappableProjects} />
+      </div>
+
       {/* Map legend */}
       <div className="absolute bottom-3 right-3 z-[1000] bg-card/95 backdrop-blur-md border border-border rounded-lg px-3 py-2.5 shadow-lg">
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Legend</p>
