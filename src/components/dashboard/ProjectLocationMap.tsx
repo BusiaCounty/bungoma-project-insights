@@ -260,8 +260,6 @@ export default function ProjectLocationMap({
         center={defaultCenter}
         zoom={defaultZoom}
         scrollWheelZoom={true}
-        maxBounds={busiaBounds}
-        maxBoundsViscosity={0.5}
         className="w-full h-full min-h-[500px]"
         style={{ background: "#f8f9fa" }}
       >
