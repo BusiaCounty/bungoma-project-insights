@@ -106,6 +106,9 @@ export default function AdminFeedbackViewer() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null);
+  const [showForwardPanel, setShowForwardPanel] = useState(false);
+  const [forwardUserId, setForwardUserId] = useState<string>("");
+  const [forwardNote, setForwardNote] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: feedback = [], isLoading } = useQuery({
