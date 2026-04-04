@@ -169,6 +169,26 @@ export default function ProjectLocationMap({
   const mapRef = useRef<L.Map | null>(null);
   const setMapRef = useCallback((map: L.Map) => { mapRef.current = map; }, []);
 
+  const toggleFullscreen = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      // Invalidate map size after fullscreen transition
+      setTimeout(() => mapRef.current?.invalidateSize(), 200);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
   const handleFitAll = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
