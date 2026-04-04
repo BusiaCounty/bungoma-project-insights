@@ -163,6 +163,8 @@ export default function ProjectLocationMap({
   highlightedId,
   className = "",
 }: ProjectLocationMapProps) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [selectedLayer, setSelectedLayer] = useState<keyof typeof mapLayers>("detailed");
   const mapRef = useRef<L.Map | null>(null);
   const setMapRef = useCallback((map: L.Map) => { mapRef.current = map; }, []);
