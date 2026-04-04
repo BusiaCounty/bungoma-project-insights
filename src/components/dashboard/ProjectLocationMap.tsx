@@ -53,19 +53,17 @@ const mapLayers = {
   },
 };
 
-// Child component to fit map bounds to markers
+// Child component to fit map bounds to markers – runs ONCE per distinct project set
 function FitBounds({ projects, highlightedId }: { projects: Project[]; highlightedId?: string | null }) {
   const map = useMap();
-  const hasFitted = useRef(false);
-  // Track the last set of project IDs so we can detect real changes
   const lastProjectKeyRef = useRef<string>("");
-  // Use a ref for highlightedId so it doesn't cause effect/callback re-runs
-  const highlightedIdRef = useRef(highlightedId);
-  highlightedIdRef.current = highlightedId;
 
-  const fitMapToBounds = useCallback((animate: boolean) => {
-    // Don't fit bounds if there's a highlighted project (let PanToHighlight handle it)
-    if (highlightedIdRef.current) return;
+  useEffect(() => {
+    if (highlightedId) return;
+
+    const key = projects.map((p) => p.id).sort().join(",");
+    if (key === lastProjectKeyRef.current) return;
+    lastProjectKeyRef.current = key;
 
     const coords = projects
       .filter((p) => p.latitude != null && p.longitude != null)
@@ -73,58 +71,13 @@ function FitBounds({ projects, highlightedId }: { projects: Project[]; highlight
 
     if (coords.length > 0) {
       const bounds = L.latLngBounds(coords.map(([lat, lng]) => L.latLng(lat, lng)));
-      
-      // Add extra padding to ensure markers don't touch edges
       const padding: [number, number] = coords.length === 1 ? [100, 100] : [60, 60];
-      
-      // Use a more conservative maxZoom to prevent over-zooming
       const maxZoom = coords.length === 1 ? 15 : 14;
-      
-      map.fitBounds(bounds, { 
-        padding, 
-        maxZoom,
-        animate,
+      requestAnimationFrame(() => {
+        map.fitBounds(bounds, { padding, maxZoom, animate: false });
       });
-      
-      hasFitted.current = true;
     }
-  }, [projects, map]);
-
-  useEffect(() => {
-    // Build a stable key from the current project IDs to detect real set changes
-    const key = projects.map((p) => p.id).join(",");
-    const projectsChanged = key !== lastProjectKeyRef.current;
-    lastProjectKeyRef.current = key;
-
-    // Reset fitted state whenever the project set changes so the next fit
-    // doesn't animate from a stale previous position.
-    if (projectsChanged) {
-      hasFitted.current = false;
-    }
-
-    const shouldAnimate = hasFitted.current && !projectsChanged;
-
-    if (!hasFitted.current) {
-      // Defer the very first fit by one rAF so Leaflet's container has
-      // correct dimensions after the initial layout pass.
-      const rafId = requestAnimationFrame(() => fitMapToBounds(shouldAnimate));
-      return () => cancelAnimationFrame(rafId);
-    } else {
-      fitMapToBounds(shouldAnimate);
-    }
-  }, [fitMapToBounds, projects]);
-
-  // Handle window resize to refit bounds
-  useEffect(() => {
-    const handleResize = () => {
-      if (!highlightedIdRef.current && projects.length > 0) {
-        setTimeout(() => fitMapToBounds(false), 150);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [fitMapToBounds, projects]);
+  }, [projects, highlightedId, map]);
 
   return null;
 }
