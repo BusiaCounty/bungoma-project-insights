@@ -219,7 +219,23 @@ export default function ProjectLocationMap({
   };
 
   return (
-    <div className={`relative rounded-xl overflow-hidden border border-border shadow-sm ${className}`}>
+    <div ref={containerRef} className={`relative rounded-xl overflow-hidden border border-border shadow-sm ${isFullscreen ? "!rounded-none" : ""} ${className}`}>
+      {/* Fullscreen toggle */}
+      <div className="absolute top-3 right-[140px] z-[1000]">
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-lg hover:bg-accent transition-colors cursor-pointer"
+          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        >
+          {isFullscreen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          )}
+          {isFullscreen ? "Exit" : "Fullscreen"}
+        </button>
+      </div>
       {/* Map layer selector */}
       <div className="absolute top-3 left-3 z-[1000] bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-lg">
         <select
