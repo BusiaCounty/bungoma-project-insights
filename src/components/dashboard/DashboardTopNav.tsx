@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BarChart3,
   ListChecks,
@@ -10,7 +11,16 @@ import {
   Eye,
   Users,
   Banknote,
+  Menu,
+  X,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export type TabId =
   | "dashboard"
