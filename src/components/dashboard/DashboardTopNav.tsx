@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BarChart3,
   ListChecks,
@@ -10,7 +11,16 @@ import {
   Eye,
   Users,
   Banknote,
+  Menu,
+  X,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export type TabId =
   | "dashboard"
@@ -50,6 +60,8 @@ const DashboardTopNav = ({
   onAdminLogin,
   onAdminLogout,
 }: DashboardTopNavProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="gradient-sidebar rounded-2xl border border-border shadow-card px-3 py-2 flex items-center gap-2 sticky top-2 z-30 backdrop-blur-md">
       <div className="flex items-center gap-2.5 pr-3 mr-1 border-r border-border shrink-0">
@@ -62,7 +74,8 @@ const DashboardTopNav = ({
         </div>
       </div>
 
-      <nav className="flex items-center gap-1 overflow-x-auto flex-1 min-w-0 scrollbar-thin">
+      {/* Desktop / tablet horizontal nav */}
+      <nav className="hidden md:flex items-center gap-1 overflow-x-auto flex-1 min-w-0 scrollbar-thin">
         {tabs.map((t) => {
           const active = activeTab === t.id;
           return (
@@ -82,6 +95,53 @@ const DashboardTopNav = ({
           );
         })}
       </nav>
+
+      {/* Mobile drawer trigger */}
+      <div className="flex md:hidden flex-1 min-w-0">
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <button
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold text-muted-foreground hover:bg-muted transition-all"
+              aria-label="Open menu"
+            >
+              <Menu className="w-4 h-4" />
+              <span className="hidden sm:inline">Menu</span>
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-72 p-0">
+            <SheetHeader className="px-4 py-4 border-b border-border">
+              <SheetTitle className="flex items-center gap-2 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-white p-0.5 flex items-center justify-center shadow">
+                  <img src="/pm.png" alt="Logo" className="w-full h-full object-contain" />
+                </div>
+                Busia County Dashboard
+              </SheetTitle>
+            </SheetHeader>
+            <nav className="flex flex-col p-2 gap-1">
+              {tabs.map((t) => {
+                const active = activeTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      onTabChange(t.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <t.icon className="w-4 h-4" />
+                    {t.title}
+                  </button>
+                );
+              })}
+            </nav>
+          </SheetContent>
+        </Sheet>
+      </div>
 
       <div className="flex items-center gap-2 pl-3 ml-1 border-l border-border shrink-0">
         {isAdmin ? (
