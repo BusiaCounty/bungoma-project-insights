@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { Calendar, Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import DashboardSidebar, {
+import DashboardTopNav, {
   type TabId,
-} from "@/components/dashboard/DashboardSidebar";
+} from "@/components/dashboard/DashboardTopNav";
 import FilterBar, { type Filters } from "@/components/dashboard/FilterBar";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import Charts from "@/components/dashboard/Charts";
@@ -33,7 +33,6 @@ const Index = () => {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [dateTime, setDateTime] = useState(new Date());
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -71,72 +70,16 @@ const Index = () => {
     });
   }, [filters, projects]);
 
-  const mobileTabLabels: Record<TabId, string> = {
-    dashboard: "Dashboard",
-    projects: "Projects",
-    location: "Location",
-    status: "Status",
-    financials: "Financials",
-    committee: "PMC",
-    whistleblower: "Report",
-    "feedback-views": "Feedback",
-  };
-
   return (
-    <div className={`min-h-screen grid ${isSidebarCollapsed ? 'grid-cols-[76px_1fr]' : 'grid-cols-[260px_1fr]'} gap-5 p-5 items-start max-lg:grid-cols-1 transition-all duration-300 ease-in-out`}>
-      <div className="max-lg:hidden">
-        <DashboardSidebar
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          isAdmin={isAdmin}
-          adminEmail={user?.email}
-          onAdminLogin={() => setShowLoginModal(true)}
-          onAdminLogout={signOut}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
-      </div>
-
-      {/* Mobile nav */}
-      <div className="lg:hidden flex gap-1 overflow-x-auto pb-1">
-        {(
-          [
-            "dashboard",
-            "projects",
-            "location",
-            "status",
-            "financials",
-            "committee",
-            "whistleblower",
-            "feedback-views",
-          ] as TabId[]
-        ).map((t) => (
-          <button
-            key={t}
-            onClick={() => setActiveTab(t)}
-            className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-              activeTab === t
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-foreground border border-border"
-            }`}
-          >
-            {mobileTabLabels[t]}
-          </button>
-        ))}
-
-        {/* Mobile admin toggle */}
-        <button
-          onClick={isAdmin ? () => navigate("/admin") : () => setShowLoginModal(true)}
-          className={`ml-auto flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-            isAdmin
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "bg-card text-muted-foreground border border-border"
-          }`}
-        >
-          <ShieldCheck className="w-3.5 h-3.5" />
-          {authLoading ? "…" : isAdmin ? "Admin" : "Login"}
-        </button>
-      </div>
+    <div className="min-h-screen flex flex-col gap-4 p-5">
+      <DashboardTopNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        isAdmin={isAdmin}
+        adminEmail={user?.email}
+        onAdminLogin={() => setShowLoginModal(true)}
+        onAdminLogout={signOut}
+      />
 
       <div className="flex flex-col gap-4 min-w-0">
         {/* Header */}
