@@ -206,6 +206,50 @@ export type Database = {
         }
         Relationships: []
       }
+      project_evidence: {
+        Row: {
+          caption: string | null
+          created_at: string
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          project_id: string
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          file_name: string
+          file_size: number
+          id?: string
+          mime_type: string
+          project_id: string
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          project_id?: string
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_evidence_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_feedback: {
         Row: {
           assigned_at: string | null
@@ -263,16 +307,23 @@ export type Database = {
         Row: {
           actual_spend: number
           budget: number
+          challenges: string | null
+          contract_value: number | null
+          contractor: string | null
           created_at: string
           description: string | null
+          expected_completion_date: string | null
+          expenditure_confirmed: boolean
           fy: string
           id: string
+          implementing_department: string | null
           latitude: number | null
           longitude: number | null
           name: string
           progress: number
           projected_cost: number | null
           sector: string
+          specific_location: string | null
           status: Database["public"]["Enums"]["project_status"]
           sub_county: string
           updated_at: string
@@ -281,16 +332,23 @@ export type Database = {
         Insert: {
           actual_spend?: number
           budget?: number
+          challenges?: string | null
+          contract_value?: number | null
+          contractor?: string | null
           created_at?: string
           description?: string | null
+          expected_completion_date?: string | null
+          expenditure_confirmed?: boolean
           fy: string
           id?: string
+          implementing_department?: string | null
           latitude?: number | null
           longitude?: number | null
           name: string
           progress?: number
           projected_cost?: number | null
           sector: string
+          specific_location?: string | null
           status?: Database["public"]["Enums"]["project_status"]
           sub_county: string
           updated_at?: string
@@ -299,16 +357,23 @@ export type Database = {
         Update: {
           actual_spend?: number
           budget?: number
+          challenges?: string | null
+          contract_value?: number | null
+          contractor?: string | null
           created_at?: string
           description?: string | null
+          expected_completion_date?: string | null
+          expenditure_confirmed?: boolean
           fy?: string
           id?: string
+          implementing_department?: string | null
           latitude?: number | null
           longitude?: number | null
           name?: string
           progress?: number
           projected_cost?: number | null
           sector?: string
+          specific_location?: string | null
           status?: Database["public"]["Enums"]["project_status"]
           sub_county?: string
           updated_at?: string
