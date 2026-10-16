@@ -28,12 +28,12 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
   const [submittedTracking, setSubmittedTracking] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const { data: feedbackList = [], isLoading: feedbackLoading } = useQuery({
+  const { data: feedbackList = [], isLoading: feedbackLoading, error: feedbackError } = useQuery({
     queryKey: ["feedback", project.id],
     queryFn: () => fetchFeedback(project.id),
   });
 
-  const { mutate: submit, isPending } = useMutation({
+  const { mutate: submit, isPending, error: submitError } = useMutation({
     mutationFn: () =>
       submitFeedback({
         project_id: project.id,
@@ -52,7 +52,7 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
   });
 
   const avgRating =
-    feedbackList.length > 0
+    feedbackList.filter(f => f.rating).length > 0
       ? feedbackList.reduce((s, f) => s + (f.rating ?? 0), 0) /
         feedbackList.filter((f) => f.rating).length
       : 0;
@@ -73,6 +73,7 @@ const ProjectFeedbackPanel = ({ project }: ProjectFeedbackPanelProps) => {
 
   return (
     <div className="mt-3 border-t border-border/60 pt-3 space-y-3">
+      {(feedbackError || submitError) && <p role="alert" className="text-sm text-destructive">{(feedbackError || submitError)?.message}</p>}
       {/* Feedback summary row */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
@@ -280,6 +281,7 @@ function FeedbackItem({ feedback: f }: { feedback: any }) {
               </span>
             </div>
           </div>
+          <span className="text-xs text-muted-foreground">{f.status}</span>
           <p className="text-[11px] text-muted-foreground mt-0.5 break-words leading-relaxed">
             {f.comment}
           </p>
@@ -304,7 +306,7 @@ function FeedbackItem({ feedback: f }: { feedback: any }) {
               <div key={r.id} className="bg-primary/5 border border-primary/15 rounded-lg px-3 py-2 ml-3">
                 <div className="flex items-center justify-between mb-0.5">
                   <span className="text-[10px] font-bold text-primary flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" /> Admin Reply
+                    <ShieldCheck className="w-3 h-3" /> {r.author_name || 'Official response'}
                   </span>
                   <span className="text-[9px] text-muted-foreground">
                     {new Date(r.created_at).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
