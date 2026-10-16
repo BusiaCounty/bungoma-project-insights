@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Save, FolderPlus, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import ProjectInformationFields, { emptyProjectInformation, projectInformation, type ProjectInformation } from "./ProjectInformationFields";
 import {
   type Project,
   SUB_COUNTIES,
@@ -9,7 +11,7 @@ import {
   getWards,
 } from "@/data/projects";
 
-type ProjectFormData = {
+type ProjectFormData = ProjectInformation & {
   name: string;
   sub_county: string;
   ward: string;
@@ -30,6 +32,7 @@ interface ProjectFormModalProps {
 }
 
 const defaultForm: ProjectFormData = {
+  ...emptyProjectInformation,
   name: "",
   sub_county: SUB_COUNTIES[0],
   ward: "",
@@ -57,6 +60,7 @@ const ProjectFormModal = ({
   useEffect(() => {
     if (project) {
       setForm({
+        ...projectInformation(project),
         name: project.name,
         sub_county: project.sub_county,
         ward: project.ward,
@@ -381,6 +385,8 @@ const ProjectFormModal = ({
               />
             </div>
 
+            <ProjectInformationFields value={form} onChange={info => setForm(current => ({ ...current, ...info }))} />
+
             {/* Error */}
             {error && (
               <div className="text-xs text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
@@ -390,14 +396,14 @@ const ProjectFormModal = ({
 
             {/* Buttons */}
             <div className="flex gap-2 justify-end mt-1">
-              <button
+              <Button variant="outline"
                 type="button"
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isLoading}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold shadow-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
@@ -412,7 +418,7 @@ const ProjectFormModal = ({
                   : isEdit
                     ? "Save Changes"
                     : "Add Project"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

@@ -8,6 +8,8 @@ import { createProject, updateProject, deleteProject } from "@/data/projects";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "./PaginationControls";
+import { Fragment } from "react";
+import { expenditure } from "./ProjectDetailView";
 
 interface ProjectsTableProps {
   projects: Project[];
@@ -51,6 +53,7 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
       "Progress (%)",
       "Projected Cost (KES)",
       "Actual Spend (KES)",
+      "Expenditure Confirmed", "Specific Location", "Implementing Department", "Contractor", "Contract Value (KES)", "Expected Completion Date", "Challenges", "Latitude", "Longitude", "Description",
     ];
     const rows = projects.map((p, i) => [
       i + 1,
@@ -63,11 +66,12 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
       p.fy,
       p.progress,
       p.projected_cost ?? "",
-      p.actual_spend ?? 0,
+      p.expenditure_confirmed ? p.actual_spend : "",
+      p.expenditure_confirmed, p.specific_location ?? "", p.implementing_department ?? "", p.contractor ?? "", p.contract_value ?? "", p.expected_completion_date ?? "", p.challenges ?? "", p.latitude ?? "", p.longitude ?? "", p.description ?? "",
     ]);
 
     if (format === "csv") {
-      const csvContent = [headers.join(","), ...rows.map(r => r.map(v => `"${v}"`).join(","))].join("\n");
+      const csvContent = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -177,7 +181,7 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
             </thead>
             <tbody>
               {paginatedItems.map((p, i) => (
-                <>
+                <Fragment key={p.id}>
                   <tr
                     key={p.id}
                     className="border-b border-border/50 hover:bg-muted/30 transition-colors"
@@ -309,9 +313,7 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
                               <span>
                                 Actual Spend:{" "}
                                 <span className="font-semibold">
-                                  {p.actual_spend != null
-                                    ? Number(p.actual_spend).toLocaleString()
-                                    : "0"}
+                                  {expenditure(p)}
                                 </span>
                               </span>
                             </div>
@@ -329,7 +331,7 @@ const ProjectsTable = ({ projects, isAdmin = false }: ProjectsTableProps) => {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
               {projects.length === 0 && (
                 <tr>

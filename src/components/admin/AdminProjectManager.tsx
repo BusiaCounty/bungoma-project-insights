@@ -15,8 +15,9 @@ import { fetchProjects, createProject, updateProject, deleteProject, bulkUpdateP
 import type { Project } from "@/data/projects";
 import CsvProjectImport from "./CsvProjectImport";
 import EnhancedProjectDetails from "./EnhancedProjectDetails";
+import ProjectInformationFields, { emptyProjectInformation, projectInformation, type ProjectInformation } from "../dashboard/ProjectInformationFields";
 
-type ProjectFormData = {
+type ProjectFormData = ProjectInformation & {
   name: string;
   description: string;
   sub_county: string;
@@ -33,6 +34,7 @@ type ProjectFormData = {
 };
 
 const emptyForm: ProjectFormData = {
+  ...emptyProjectInformation,
   name: "",
   description: "",
   sub_county: "",
@@ -150,6 +152,7 @@ export default function AdminProjectManager() {
   const openEdit = (project: Project) => {
     setEditingProject(project);
     setForm({
+      ...projectInformation(project),
       name: project.name,
       description: project.description || "",
       sub_county: project.sub_county,
@@ -568,6 +571,8 @@ export default function AdminProjectManager() {
                 </div>
               </div>
             </div>
+
+            <ProjectInformationFields value={form} onChange={info => setForm(current => ({ ...current, ...info }))} />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>Cancel</Button>
