@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Project } from "@/data/projects";
+import { recordedExpenditure } from "@/data/projectFinancials";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -12,7 +13,7 @@ export interface ProjectDetailViewProps {
   project: Project | null; open: boolean; onOpenChange: (open: boolean) => void;
 }
 export const currency = (value: number | null | undefined) => value == null ? 'Not recorded' : `KES ${Number(value).toLocaleString('en-KE', { maximumFractionDigits: 2 })}`;
-export const expenditure = (project: Project) => project.expenditure_confirmed ? currency(project.actual_spend) : 'Not confirmed';
+export const expenditure = (project: Project) => recordedExpenditure(project) == null ? 'Not confirmed' : currency(recordedExpenditure(project));
 
 export default function ProjectDetailView({ project, open, onOpenChange }: ProjectDetailViewProps) {
   const saved = useQuery({ queryKey: ['project', project?.id], enabled: open && !!project,

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import Papa from "papaparse";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,6 +22,15 @@ type CsvRow = {
   progress: string;
   latitude: string;
   longitude: string;
+  implementing_department: string;
+  contractor: string;
+  contract_value: string;
+  expected_completion_date: string;
+  challenges: string;
+  specific_location: string;
+  expenditure_confirmed: string;
+  actual_spend: string;
+  projected_cost: string;
 };
 
 type ValidatedRow = CsvRow & {
@@ -29,7 +39,7 @@ type ValidatedRow = CsvRow & {
 };
 
 const REQUIRED_HEADERS = ["name", "sub_county", "ward", "sector", "fy"];
-const ALL_HEADERS = ["name", "description", "sub_county", "ward", "sector", "status", "fy", "budget", "progress", "latitude", "longitude"];
+const ALL_HEADERS = ["name", "description", "sub_county", "ward", "sector", "status", "fy", "budget", "progress", "latitude", "longitude", "implementing_department", "contractor", "contract_value", "expected_completion_date", "challenges", "specific_location", "expenditure_confirmed", "actual_spend", "projected_cost"];
 
 type ProjectStatus = (typeof STATUSES)[number];
 
@@ -38,20 +48,9 @@ function isProjectStatus(value: string): value is ProjectStatus {
 }
 
 function parseCsv(text: string): { headers: string[]; rows: Record<string, string>[] } {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim());
-  if (lines.length < 2) return { headers: [], rows: [] };
-
-  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/\s+/g, "_"));
-  const rows = lines.slice(1).map((line) => {
-    const values = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
-    const row: Record<string, string> = {};
-    headers.forEach((h, i) => {
-      row[h] = values[i] || "";
-    });
-    return row;
-  });
-
-  return { headers, rows };
+  const parsed = Papa.parse<Record<string, string>>(text, { header: true, skipEmptyLines: 'greedy',
+    transformHeader: h => h.trim().toLowerCase().replace(/\s+/g, '_'), transform: v => v.trim() });
+  return { headers: parsed.meta.fields ?? [], rows: parsed.data };
 }
 
 function validateRow(row: Record<string, string>, index: number): ValidatedRow {
@@ -67,6 +66,19 @@ function validateRow(row: Record<string, string>, index: number): ValidatedRow {
   const description = row.description || "";
   const latitude = row.latitude || "";
   const longitude = row.longitude || "";
+  const extra = {
+    implementing_department: row.implementing_department || '', contractor: row.contractor || '',
+    contract_value: row.contract_value || '', expected_completion_date: row.expected_completion_date || '',
+    challenges: row.challenges || '', specific_location: row.specific_location || '',
+    expenditure_confirmed: row.expenditure_confirmed?.toLowerCase() || 'false',
+    actual_spend: row.actual_spend || '0', projected_cost: row.projected_cost || '',
+  };
+  for (const key of ['contract_value', 'actual_spend', 'projected_cost'] as const) {
+    if (extra[key] && (!Number.isFinite(Number(extra[key])) || Number(extra[key]) < 0)) errors.push(`${key} must be a non-negative number`);
+  }
+  if (!['true', 'false'].includes(extra.expenditure_confirmed)) errors.push('expenditure_confirmed must be true or false');
+  if (extra.expected_completion_date && (!/^\d{4}-\d{2}-\d{2}$/.test(extra.expected_completion_date) || !Number.isFinite(Date.parse(extra.expected_completion_date)))) errors.push('Expected completion date must be YYYY-MM-DD');
+  if (!!latitude !== !!longitude) errors.push('Provide both latitude and longitude');
 
   if (!name) errors.push("Name is required");
   if (name.length > 200) errors.push("Name too long (max 200)");
@@ -88,7 +100,7 @@ function validateRow(row: Record<string, string>, index: number): ValidatedRow {
   if (longitude && (isNaN(Number(longitude)) || Number(longitude) < -180 || Number(longitude) > 180))
     errors.push("Longitude must be between -180 and 180");
 
-  return { name, description, sub_county, ward, sector, status, fy, budget, progress, latitude, longitude, errors, rowIndex: index + 2 };
+  return { ...extra, name, description, sub_county, ward, sector, status, fy, budget, progress, latitude, longitude, errors, rowIndex: index + 2 };
 }
 
 interface CsvProjectImportProps {
@@ -181,8 +193,15 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
           fy: row.fy,
           budget: Number(row.budget) || 0,
           progress: Number(row.progress) || 0,
-          actual_spend: 0,
-          projected_cost: null,
+          actual_spend: Number(row.actual_spend),
+          projected_cost: row.projected_cost ? Number(row.projected_cost) : null,
+          implementing_department: row.implementing_department || null,
+          contractor: row.contractor || null,
+          contract_value: row.contract_value ? Number(row.contract_value) : null,
+          expected_completion_date: row.expected_completion_date || null,
+          challenges: row.challenges || null,
+          specific_location: row.specific_location || null,
+          expenditure_confirmed: row.expenditure_confirmed === 'true',
           latitude: row.latitude ? Number(row.latitude) : null,
           longitude: row.longitude ? Number(row.longitude) : null,
         });
@@ -213,7 +232,7 @@ export default function CsvProjectImport({ open, onOpenChange }: CsvProjectImpor
 
   const downloadTemplate = () => {
     const header = ALL_HEADERS.join(",");
-    const example = `"Busia Water Supply Phase II","Construction of water supply system","Matayos","Bukhayo West","Health and Sanitation","Ongoing","2024/2025","5000000","35","0.4608","34.1108"`;
+    const example = `"Busia Water Supply Phase II","Construction of water supply system","Matayos","Bukhayo West","Health and Sanitation","Ongoing","2024/2025","5000000","35","0.4608","34.1108",,,,,,,false,0,`;
     const blob = new Blob([header + "\n" + example], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
