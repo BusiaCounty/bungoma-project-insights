@@ -1,0 +1,1 @@
+ALTER POLICY "Project editors upload evidence" ON storage.objects WITH CHECK (bucket_id = 'project-evidence' AND (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'staff')) AND EXISTS (SELECT 1 FROM public.projects p WHERE p.id::text = (storage.foldername(objects.name))[1]));
